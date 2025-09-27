@@ -73,7 +73,7 @@ public class ProductService {
 
     private String saveImage(MultipartFile file) throws IOException {
         // Create upload directory if it doesn't exist
-        Path uploadPath = Paths.get(uploadDir);
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath();
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
@@ -90,7 +90,7 @@ public class ProductService {
 
     private void deleteImage(String fileName) {
         try {
-            Path filePath = Paths.get(uploadDir + fileName);
+            Path filePath = Paths.get(uploadDir).toAbsolutePath().resolve(fileName);
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
             // Log error but don't throw exception
