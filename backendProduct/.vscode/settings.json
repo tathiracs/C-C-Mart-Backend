@@ -1,0 +1,16 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.maven.downloadSources": true,
+    "java.maven.downloadJavadoc": true,
+    "java.project.sourcePaths": [
+        "src/main/java"
+    ],
+    "java.project.outputPath": "target/classes",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ],
+    "spring-boot.ls.java.support.enabled": true,
+    "files.exclude": {
+        "**/target": true
+    }
+}
