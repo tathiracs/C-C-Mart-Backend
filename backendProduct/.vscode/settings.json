@@ -12,5 +12,6 @@
     "spring-boot.ls.java.support.enabled": true,
     "files.exclude": {
         "**/target": true
-    }
+    },
+    "java.compile.nullAnalysis.mode": "automatic"
 }

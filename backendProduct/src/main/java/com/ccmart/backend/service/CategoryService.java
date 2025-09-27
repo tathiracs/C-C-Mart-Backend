@@ -10,30 +10,30 @@ import java.util.Optional;
 
 @Service
 public class CategoryService {
-    
+
     @Autowired
     private CategoryRepository categoryRepository;
-    
+
     public List<Category> getAllCategories() {
         return categoryRepository.findAll();
     }
-    
+
     public Optional<Category> getCategoryById(Long id) {
         return categoryRepository.findById(id);
     }
-    
+
     public Category getCategoryByName(String name) {
         return categoryRepository.findByName(name);
     }
-    
+
     public Category saveCategory(Category category) {
         return categoryRepository.save(category);
     }
-    
+
     public void deleteCategory(Long id) {
         categoryRepository.deleteById(id);
     }
-    
+
     public boolean existsByName(String name) {
         return categoryRepository.existsByName(name);
     }

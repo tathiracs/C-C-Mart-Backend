@@ -16,6 +16,7 @@ A comprehensive backend system for C&C Mart grocery shop built with Java Spring 
 ## Product Fields
 
 Each product contains:
+
 - **Product ID**: Auto-increment unique identifier (5+ digits)
 - **Name**: Product name (required)
 - **Brand**: Product brand (required)
@@ -29,6 +30,7 @@ Each product contains:
 ## Categories
 
 Pre-configured categories include:
+
 - Foods
 - Beverages
 - Dairy & Milk
@@ -94,6 +96,7 @@ The application will be available at: `http://localhost:8080`
 ### 4. Initial Data
 
 When the application starts, it will automatically:
+
 - Create the `ccmart2` database if it doesn't exist
 - Create all necessary tables
 - Populate initial categories
@@ -196,16 +199,19 @@ src/
 ## Troubleshooting
 
 ### Database Connection Issues
+
 - Verify MySQL is running
 - Check database credentials in `application.properties`
 - Ensure `ccmart2` database exists
 
 ### File Upload Issues
+
 - Check `uploads/images/` directory exists and is writable
 - Verify file size is under 10MB
 - Ensure supported image format (JPG, PNG, GIF)
 
 ### Port Conflicts
+
 - Default port is 8080
 - Change in `application.properties`: `server.port=8081`
 
