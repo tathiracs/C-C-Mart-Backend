@@ -12,8 +12,18 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
-        // Get the absolute path to the uploads directory
-        String uploadPath = new File("uploads/images/").getAbsolutePath() + File.separator;
+        // Get the absolute path to the uploads directory relative to the project
+        // directory
+        String projectDir = System.getProperty("user.dir");
+        String uploadPath;
+
+        if (projectDir.endsWith("backendProduct")) {
+            uploadPath = new File(projectDir, "uploads/images/").getAbsolutePath() + File.separator;
+        } else {
+            uploadPath = new File(projectDir, "backendProduct/uploads/images/").getAbsolutePath() + File.separator;
+        }
+
+        System.out.println("Serving images from: " + uploadPath);
 
         // Serve uploaded images
         registry.addResourceHandler("/uploads/images/**")

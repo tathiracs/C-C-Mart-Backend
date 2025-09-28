@@ -21,7 +21,14 @@ public class ProductService {
     @Autowired
     private ProductRepository productRepository;
 
-    private final String uploadDir = "uploads/images/";
+    private String getUploadDir() {
+        String projectDir = System.getProperty("user.dir");
+        if (projectDir.endsWith("backendProduct")) {
+            return "uploads/images/";
+        } else {
+            return "backendProduct/uploads/images/";
+        }
+    }
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
@@ -73,6 +80,7 @@ public class ProductService {
 
     private String saveImage(MultipartFile file) throws IOException {
         // Create upload directory if it doesn't exist
+        String uploadDir = getUploadDir();
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath();
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
@@ -90,6 +98,7 @@ public class ProductService {
 
     private void deleteImage(String fileName) {
         try {
+            String uploadDir = getUploadDir();
             Path filePath = Paths.get(uploadDir).toAbsolutePath().resolve(fileName);
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
