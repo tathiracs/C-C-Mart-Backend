@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Dependencies
 node_modules/
 */node_modules/
@@ -97,6 +96,7 @@ temp/
 .Trashes
 ehthumbs.db
 Thumbs.db
+Icon?
 
 # Database
 *.db
@@ -106,16 +106,3 @@ Thumbs.db
 # Application specific
 application-local.properties
 /logs/
-
-
-
-
-
-
-
-=======
-.DS_Store
-Icon?
-.DS_Store
-Icon?
->>>>>>> 4f2c1bab5b5928822af391aee167af520af19b26
