@@ -1,0 +1,13 @@
+body {
+  font-family: 'Roboto', Arial, sans-serif;
+  background: #f6fff6;
+  margin: 0;
+}
+
+:root {
+  --primary-green: #228B22;
+  --accent-green: #43a047;
+  --light-green: #e8f5e9;
+  --dark-green: #145214;
+  --success-green: #4caf50;
+}

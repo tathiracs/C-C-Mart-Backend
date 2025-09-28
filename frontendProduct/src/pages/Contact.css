@@ -1,0 +1,25 @@
+.contact-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  padding: 48px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(34,139,34,0.08);
+  color: var(--dark-green);
+}
+
+.contact-container h1 {
+  color: var(--primary-green);
+  margin-bottom: 32px;
+}
+
+.contact-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 32px;
+}
+
+.contact-detail h2 {
+  color: var(--accent-green);
+  margin-bottom: 8px;
+}
