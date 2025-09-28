@@ -14,22 +14,26 @@ A modern React frontend for C&C Mart grocery shop, featuring a green-themed desi
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (version 14 or higher)
 - npm or yarn
 
 ### Installation
 
 1. Navigate to the frontend directory:
+
 ```bash
 cd frontendProduct
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Start the development server:
+
 ```bash
 npm start
 ```
@@ -58,6 +62,7 @@ src/
 ## Color Theme
 
 The app uses various shades of green:
+
 - Primary Green: #228B22
 - Accent Green: #43a047
 - Light Green: #e8f5e9
@@ -67,6 +72,7 @@ The app uses various shades of green:
 ## Sample Products
 
 The frontend includes sample products with placeholder images:
+
 - Basmati Rice
 - Anchor Milk
 - Elephant House Milk
