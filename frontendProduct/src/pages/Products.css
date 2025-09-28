@@ -16,3 +16,39 @@
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 32px;
 }
+
+.no-products {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 2rem;
+}
+
+.no-products-content {
+  text-align: center;
+  background: white;
+  padding: 3rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(34,139,34,0.08);
+  max-width: 500px;
+}
+
+.no-products-content h2 {
+  color: var(--primary-green);
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.no-products-content p {
+  color: var(--dark-green);
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.grocery-icon {
+  font-size: 4rem;
+  margin-top: 1rem;
+  opacity: 0.7;
+}

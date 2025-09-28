@@ -36,7 +36,14 @@
 
 .hero-text p {
   font-size: 1.2rem;
-  margin-bottom: 0;
+  margin-bottom: 16px;
+}
+
+.no-products-message {
+  font-size: 1rem !important;
+  opacity: 0.9;
+  font-style: italic;
+  margin-bottom: 0 !important;
 }
 
 .home-features {

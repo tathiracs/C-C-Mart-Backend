@@ -1,15 +1,15 @@
 import React from "react";
-import heroImg from "../assets/hero_grocery.jpg";
 import "./Home.css";
 
 function Home() {
   return (
     <div className="home-container">
       <div className="hero-section">
-        <img src={heroImg} alt="Grocery Shop" className="hero-img" />
+        <img src="/images/hero_grocery.jpg" alt="Grocery Shop" className="hero-img" />
         <div className="hero-text">
           <h1>Welcome to C&C Mart</h1>
           <p>Your one-stop shop for fresh groceries and daily essentials.</p>
+          <p className="no-products-message">We're currently updating our inventory. Please check back soon for our amazing products!</p>
         </div>
       </div>
       <div className="home-features">
