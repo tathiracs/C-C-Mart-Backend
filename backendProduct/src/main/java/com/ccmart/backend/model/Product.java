@@ -3,7 +3,7 @@ package com.ccmart.backend.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -28,7 +28,7 @@ public class Product {
     private String weight;
 
     @NotNull(message = "Quantity is required")
-    @Positive(message = "Quantity must be positive")
+    @PositiveOrZero(message = "Quantity must be 0 or positive")
     @Column(nullable = false)
     private Integer quantity;
 
