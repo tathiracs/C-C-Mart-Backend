@@ -5,21 +5,18 @@ A full-stack grocery store application built with React frontend and Node.js bac
 ## 🏪 Features
 
 ### Customer Features
-- Browse products by categories
-- Search and filter products
-- Add items to cart
 - User authentication (login/register)
-- Order management
 - Profile management
+- Order management
 - Contact information
 
 ### Admin Features
-- Product management (CRUD)
-- Category management
-- Order management
-- User management
+- Comprehensive admin dashboard
+- User management and monitoring
+- Order management and tracking
 - Sales reports and analytics
-- Inventory management
+- System configuration and settings
+- Real-time data visualization
 
 ## 🛠️ Tech Stack
 
@@ -118,21 +115,18 @@ ccmart/
 - `GET /api/auth/me` - Get current user
 - `POST /api/auth/logout` - Logout user
 
-### Products
-- `GET /api/products` - Get all products
-- `GET /api/products/:id` - Get single product
-- `GET /api/products/featured` - Get featured products
-- `POST /api/products` - Create product (Admin)
-- `PUT /api/products/:id` - Update product (Admin)
-- `DELETE /api/products/:id` - Delete product (Admin)
+### User Management
+- `GET /api/users` - Get all users (Admin)
+- `GET /api/users/:id` - Get single user (Admin)
+- `PUT /api/users/:id` - Update user (Admin)
+- `DELETE /api/users/:id` - Delete user (Admin)
+- `PUT /api/users/:id/status` - Update user status (Admin)
 
-### Categories
-- `GET /api/categories` - Get all categories
-- `GET /api/categories/:id` - Get single category
-- `GET /api/categories/:id/products` - Get products by category
-- `POST /api/categories` - Create category (Admin)
-- `PUT /api/categories/:id` - Update category (Admin)
-- `DELETE /api/categories/:id` - Delete category (Admin)
+### Admin Dashboard
+- `GET /api/admin/dashboard` - Get dashboard statistics
+- `GET /api/admin/analytics` - Get analytics data
+- `GET /api/admin/reports` - Generate reports
+- `GET /api/admin/system-health` - Get system health status
 
 ### Orders
 - `GET /api/orders` - Get orders
@@ -141,12 +135,11 @@ ccmart/
 - `PUT /api/orders/:id/status` - Update order status (Admin)
 - `PUT /api/orders/:id/cancel` - Cancel order
 
-### Cart
-- `GET /api/cart` - Get user's cart
-- `POST /api/cart` - Add item to cart
-- `PUT /api/cart/:id` - Update cart item
-- `DELETE /api/cart/:id` - Remove item from cart
-- `DELETE /api/cart` - Clear cart
+### Profile Management
+- `GET /api/profile` - Get user profile
+- `PUT /api/profile` - Update user profile
+- `PUT /api/profile/password` - Change password
+- `DELETE /api/profile` - Delete user account
 
 ## 🌐 Environment Variables
 
@@ -170,18 +163,66 @@ REACT_APP_API_URL=http://localhost:8080/api
 
 ## 📱 Usage
 
-1. **Customer Flow**:
-   - Browse products on homepage
-   - Register/Login to place orders
-   - Add items to cart
-   - Proceed to checkout
-   - Track orders in profile
+### 🔐 Authentication System
 
-2. **Admin Flow**:
-   - Login with admin credentials
-   - Access admin dashboard
-   - Manage products, categories, orders
-   - View reports and analytics
+#### User Registration
+1. Navigate to `/register` page
+2. Fill in required information:
+   - Full Name
+   - Email Address
+   - Phone Number
+   - Password (minimum 8 characters)
+   - Confirm Password
+3. Accept terms and conditions
+4. Click "Register" to create account
+5. Verify email address (if email verification is enabled)
+
+#### User Login
+1. Navigate to `/login` page
+2. Enter registered email and password
+3. Optional: Check "Remember Me" for persistent login
+4. Click "Login" to access account
+5. Forgot password option available for password reset
+
+### 👨‍💼 Admin Dashboard
+
+#### Accessing Admin Dashboard
+1. Login with admin credentials (admin@ccmart.lk / admin123)
+2. Navigate to `/admin/dashboard`
+3. Access comprehensive admin panel
+
+#### Dashboard Features
+
+**📊 Analytics Overview**
+- Real-time user statistics
+- Order trends and metrics
+- Revenue analytics
+- System performance monitoring
+
+**👥 User Management**
+- View all registered users
+- User activity monitoring
+- Account status management (active/inactive/banned)
+- User role assignment
+- Bulk user operations
+
+**📋 Order Management**
+- View all orders with filtering options
+- Order status tracking and updates
+- Order details and history
+- Customer communication tools
+
+**📈 Reports & Analytics**
+- Generate custom reports
+- Export data in various formats (PDF, Excel, CSV)
+- Sales performance tracking
+- User engagement metrics
+
+**⚙️ System Configuration**
+- Application settings management
+- Email template configuration
+- Security settings
+- Backup and maintenance tools
 
 ## 🔒 Security Features
 
@@ -195,12 +236,13 @@ REACT_APP_API_URL=http://localhost:8080/api
 ## 📊 Database Schema
 
 The application automatically creates the following tables:
-- `users` - User accounts
-- `categories` - Product categories
-- `products` - Product information
-- `orders` - Order details
+- `users` - User accounts and authentication
+- `user_profiles` - Extended user profile information
+- `user_sessions` - Active user sessions
+- `orders` - Order details and history
 - `order_items` - Order line items
-- `cart` - User cart items
+- `admin_logs` - Admin activity logging
+- `system_settings` - Application configuration
 
 ## 🚀 Deployment
 

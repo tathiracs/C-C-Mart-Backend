@@ -45,9 +45,9 @@ const testSimple = async () => {
     
     // Test with parameters
     console.log('\n🔢 Testing with parameters...');
+    const testLimit = 3;
     const [categoriesWithLimit] = await promisePool.execute(
-      `SELECT * FROM categories WHERE is_active = true LIMIT ?`,
-      [3]
+      `SELECT * FROM categories WHERE is_active = true LIMIT ${testLimit}`
     );
     console.log(`✅ Categories with limit: ${categoriesWithLimit.length} categories found`);
     
@@ -63,3 +63,5 @@ const testSimple = async () => {
 };
 
 testSimple();
+
+

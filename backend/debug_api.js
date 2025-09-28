@@ -37,8 +37,7 @@ const testAPIs = async () => {
        FROM categories c 
        WHERE c.is_active = true
        ORDER BY c.name ASC
-       LIMIT ? OFFSET ?`,
-      [20, 0]
+       LIMIT 20 OFFSET 0`
     );
     console.log(`✅ Categories query successful: ${categories.length} categories found`);
     
@@ -52,8 +51,7 @@ const testAPIs = async () => {
        LEFT JOIN categories c ON p.category_id = c.id 
        WHERE p.is_active = true
        ORDER BY p.name ASC
-       LIMIT ? OFFSET ?`,
-      [12, 0]
+       LIMIT 12 OFFSET 0`
     );
     console.log(`✅ Products query successful: ${products.length} products found`);
     

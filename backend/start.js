@@ -9,7 +9,7 @@ process.env.DB_PASSWORD = 'Root123@';
 process.env.JWT_SECRET = 'ccmart_super_secret_jwt_key_2024_secure';
 process.env.JWT_EXPIRE = '7d';
 process.env.RATE_LIMIT_WINDOW_MS = '900000';
-process.env.RATE_LIMIT_MAX_REQUESTS = '100';
+process.env.RATE_LIMIT_MAX_REQUESTS = '1000';
 
 // Start the server
 require('./server.js');

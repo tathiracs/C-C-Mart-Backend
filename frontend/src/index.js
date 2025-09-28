@@ -25,10 +25,10 @@ const queryClient = new QueryClient({
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
+      main: '#2e7d32',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#66bb6a',
     },
   },
   typography: {
@@ -64,3 +64,5 @@ root.render(
     </QueryClientProvider>
   </React.StrictMode>
 );
+
+

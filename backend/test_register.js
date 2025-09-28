@@ -64,3 +64,10 @@ function testRegister() {
 
 console.log('🧪 Testing registration API...');
 testRegister();
+
+
+
+
+
+
+

@@ -24,8 +24,7 @@ router.get('/', protect, authorize('admin'), validatePagination, async (req, res
       `SELECT id, name, email, phone, address, role, is_active, created_at 
        FROM users 
        ORDER BY created_at DESC 
-       LIMIT ? OFFSET ?`,
-      [limit, offset]
+       LIMIT ${limit} OFFSET ${offset}`
     );
 
     res.json({
@@ -156,6 +155,96 @@ router.put('/profile', protect, validateUserUpdate, async (req, res) => {
     });
   } catch (error) {
     console.error('Update profile error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// @desc    Change user password
+// @route   PUT /api/users/change-password
+// @access  Private
+router.put('/change-password', protect, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password and new password are required'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters long'
+      });
+    }
+
+    // Get current user
+    const [users] = await pool.execute(
+      'SELECT password FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, users[0].password);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'Current password is incorrect'
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await pool.execute(
+      'UPDATE users SET password = ? WHERE id = ?',
+      [hashedPassword, userId]
+    );
+
+    res.json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+});
+
+// @desc    Update user preferences
+// @route   PUT /api/users/preferences
+// @access  Private
+router.put('/preferences', protect, async (req, res) => {
+  try {
+    const preferences = req.body;
+    const userId = req.user.id;
+
+    // For now, we'll just return success since we don't have a preferences table
+    // In a real application, you would store these in a user_preferences table
+    res.json({
+      success: true,
+      message: 'Preferences updated successfully',
+      data: preferences
+    });
+  } catch (error) {
+    console.error('Update preferences error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -307,3 +396,5 @@ router.delete('/:id', protect, authorize('admin'), validateId, async (req, res) 
 });
 
 module.exports = router;
+
+

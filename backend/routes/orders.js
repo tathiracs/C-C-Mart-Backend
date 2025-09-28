@@ -62,8 +62,8 @@ router.get('/', protect, validatePagination, async (req, res) => {
        LEFT JOIN users u ON o.user_id = u.id
        ${whereClause}
        ORDER BY o.created_at DESC
-       LIMIT ? OFFSET ?`,
-      [...queryParams, limit, offset]
+       LIMIT ${limit} OFFSET ${offset}`,
+      queryParams
     );
 
     // Get order items for each order
@@ -454,3 +454,5 @@ router.put('/:id/cancel', protect, validateId, async (req, res) => {
 });
 
 module.exports = router;
+
+

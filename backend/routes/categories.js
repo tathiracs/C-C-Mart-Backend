@@ -130,15 +130,24 @@ router.get('/:id/products', optionalAuth, validateId, validatePagination, async 
 
     // Get products
     const [products] = await pool.execute(
-      `SELECT p.id, p.name, p.description, p.price, p.image_url, 
-              p.stock_quantity, p.unit, p.is_featured, p.created_at,
-              c.name as category_name, c.id as category_id
+      `SELECT 
+          p.id,
+          p.name,
+          p.description,
+          p.price,
+          p.image_url,
+          p.stock_quantity,
+          p.unit,
+          p.is_featured,
+          p.created_at,
+          c.name as category_name,
+          c.id as category_id
        FROM products p 
        LEFT JOIN categories c ON p.category_id = c.id 
        WHERE p.category_id = ? AND p.is_active = true
        ORDER BY p.${sortColumn} ${sortOrder}
-       LIMIT ? OFFSET ?`,
-      [categoryId, limit, offset]
+       LIMIT ${limit} OFFSET ${offset}`,
+      [categoryId]
     );
 
     res.json({
@@ -148,7 +157,19 @@ router.get('/:id/products', optionalAuth, validateId, validatePagination, async 
       total,
       page,
       pages: Math.ceil(total / limit),
-      data: products
+      data: products.map((row) => {
+        if (row.image_url) return row;
+        const PRODUCT_IMAGE_MAP = {
+          'Sugar': 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&q=80&auto=format&fit=crop',
+          'Brown Sugar': 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&q=80&auto=format&fit=crop'
+        };
+        if (PRODUCT_IMAGE_MAP[row.name]) {
+          row.image_url = PRODUCT_IMAGE_MAP[row.name];
+          return row;
+        }
+        row.image_url = `https://picsum.photos/seed/${row.id}-${row.category_id || 0}/400/300`;
+        return row;
+      })
     });
   } catch (error) {
     console.error('Get category products error:', error);

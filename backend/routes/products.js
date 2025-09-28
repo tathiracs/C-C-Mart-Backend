@@ -5,6 +5,32 @@ const { validateProduct, validateId, validatePagination } = require('../middlewa
 
 const router = express.Router();
 
+// Curated image map to ensure relevant fallbacks by product name
+const PRODUCT_IMAGE_MAP = {
+  'Sugar': 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&q=80&auto=format&fit=crop',
+  'Brown Sugar': 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&q=80&auto=format&fit=crop',
+  'Cooking Oil': 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=800&q=80&auto=format&fit=crop',
+  'Fresh Carrots': 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=800&q=80&auto=format&fit=crop',
+  'Fresh Tomatoes': 'https://images.unsplash.com/photo-1546470427-5c9d2a73ee3b?w=800&q=80&auto=format&fit=crop',
+  'Fresh Milk': 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800&q=80&auto=format&fit=crop',
+  'Fresh Eggs': 'https://images.unsplash.com/photo-1518569656558-1f25e69d93d3?w=800&q=80&auto=format&fit=crop',
+  'Basmati Rice': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=800&q=80&auto=format&fit=crop',
+  'Cookies': 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=800&q=80&auto=format&fit=crop'
+};
+
+function withImageFallback(row) {
+  if (row.image_url) return row;
+  const nameMatch = PRODUCT_IMAGE_MAP[row.name];
+  if (nameMatch) {
+    row.image_url = nameMatch;
+    return row;
+  }
+  // Category-based stable placeholder
+  const categoryId = row.category_id || 0;
+  row.image_url = `https://picsum.photos/seed/${row.id}-${categoryId}/400/300`;
+  return row;
+}
+
 // @desc    Get all products
 // @route   GET /api/products
 // @access  Public
@@ -16,6 +42,7 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
     const category = req.query.category;
     const search = req.query.search;
     const featured = req.query.featured;
+    const stock = req.query.stock;
     const minPrice = parseFloat(req.query.min_price) || 0;
     const maxPrice = parseFloat(req.query.max_price) || 999999;
     const sort = req.query.sort || 'name';
@@ -37,6 +64,21 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
 
     if (featured === 'true') {
       whereClause += ' AND p.is_featured = true';
+    }
+
+    // Stock status filter
+    if (stock) {
+      switch (stock) {
+        case 'in_stock':
+          whereClause += ' AND p.stock_quantity > 10';
+          break;
+        case 'low_stock':
+          whereClause += ' AND p.stock_quantity > 0 AND p.stock_quantity <= 10';
+          break;
+        case 'out_of_stock':
+          whereClause += ' AND p.stock_quantity = 0';
+          break;
+      }
     }
 
     // Price range filter
@@ -82,13 +124,22 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
 
     // Get products
     const [products] = await pool.execute(
-      `SELECT p.id, p.name, p.description, p.price, p.image_url, 
-              p.stock_quantity, p.unit, p.is_featured, p.created_at,
-              c.name as category_name, c.id as category_id
+      `SELECT 
+          p.id,
+          p.name,
+          p.description,
+          p.price,
+          p.image_url,
+          p.stock_quantity,
+          p.unit,
+          p.is_featured,
+          p.created_at,
+          c.name AS category_name,
+          c.id AS category_id
        FROM products p 
        LEFT JOIN categories c ON p.category_id = c.id 
        ${whereClause}
-       ${sortClause}
+        ${sortClause}
        LIMIT ${limit} OFFSET ${offset}`,
       queryParams
     );
@@ -99,7 +150,7 @@ router.get('/', optionalAuth, validatePagination, async (req, res) => {
       total,
       page,
       pages: Math.ceil(total / limit),
-      data: products
+      data: products.map(withImageFallback)
     });
   } catch (error) {
     console.error('Get products error:', error);
@@ -313,21 +364,29 @@ router.get('/featured', optionalAuth, async (req, res) => {
     const limit = parseInt(req.query.limit) || 8;
 
     const [products] = await pool.execute(
-      `SELECT p.id, p.name, p.description, p.price, p.image_url, 
-              p.stock_quantity, p.unit, p.is_featured, p.created_at,
-              c.name as category_name, c.id as category_id
+      `SELECT 
+          p.id,
+          p.name,
+          p.description,
+          p.price,
+          p.image_url,
+          p.stock_quantity,
+          p.unit,
+          p.is_featured,
+          p.created_at,
+          c.name as category_name,
+          c.id as category_id
        FROM products p 
        LEFT JOIN categories c ON p.category_id = c.id 
        WHERE p.is_active = true AND p.is_featured = true
        ORDER BY p.created_at DESC
-       LIMIT ?`,
-      [limit]
+       LIMIT ${limit}`
     );
 
     res.json({
       success: true,
       count: products.length,
-      data: products
+      data: products.map(withImageFallback)
     });
   } catch (error) {
     console.error('Get featured products error:', error);

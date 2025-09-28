@@ -51,6 +51,8 @@ export const usersAPI = {
   getUsers: (params) => api.get('/users', { params }),
   getUser: (id) => api.get(`/users/${id}`),
   updateProfile: (userData) => api.put('/users/profile', userData),
+  changePassword: (passwordData) => api.put('/users/change-password', passwordData),
+  updatePreferences: (preferences) => api.put('/users/preferences', preferences),
   updateUser: (id, userData) => api.put(`/users/${id}`, userData),
   deleteUser: (id) => api.delete(`/users/${id}`),
 };
