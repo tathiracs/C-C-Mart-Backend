@@ -5,6 +5,7 @@ import com.ccmart.backend.model.Category;
 import com.ccmart.backend.service.ProductService;
 import com.ccmart.backend.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -175,5 +176,21 @@ public class ProductController {
         model.addAttribute("searchQuery", query);
         model.addAttribute("searchType", searchType);
         return "products/list";
+    }
+
+    // REST API endpoints for cart functionality
+    @GetMapping("/api/products")
+    @ResponseBody
+    @CrossOrigin(origins = "http://localhost:3000")
+    public List<Product> getAllProductsAPI() {
+        return productService.getAvailableProducts();
+    }
+
+    @GetMapping("/api/products/{id}")
+    @ResponseBody
+    @CrossOrigin(origins = "http://localhost:3000")
+    public ResponseEntity<Product> getProductByIdAPI(@PathVariable Long id) {
+        Optional<Product> product = productService.getProductById(id);
+        return product.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 }

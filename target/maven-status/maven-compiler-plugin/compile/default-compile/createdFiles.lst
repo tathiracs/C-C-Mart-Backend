@@ -1,4 +1,3 @@
-com\ccmart\backend\config\DataInitializer.class
 com\ccmart\backend\service\CategoryService.class
 com\ccmart\backend\config\WebConfig.class
 com\ccmart\backend\model\Category.class
