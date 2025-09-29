@@ -19,6 +19,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByBrandContainingIgnoreCase(String brand);
 
+    // Unified search method that searches name, brand, and description
+    List<Product> findByNameContainingIgnoreCaseOrBrandContainingIgnoreCase(String name, String brand);
+
+    @Query("SELECT p FROM Product p WHERE " +
+            "LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(p.brand) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(p.description) LIKE LOWER(CONCAT('%', :query, '%'))")
+    List<Product> findByNameOrBrandOrDescriptionContaining(@Param("query") String query);
+
+    @Query("SELECT p FROM Product p WHERE p.quantity > 0 AND (" +
+            "LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(p.brand) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+            "LOWER(p.description) LIKE LOWER(CONCAT('%', :query, '%')))")
+    List<Product> findAvailableProductsByNameOrBrandOrDescriptionContaining(@Param("query") String query);
+
     @Query("SELECT p FROM Product p WHERE p.quantity > 0")
     List<Product> findAvailableProducts();
 

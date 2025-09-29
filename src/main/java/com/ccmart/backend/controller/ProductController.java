@@ -156,41 +156,44 @@ public class ProductController {
         return "redirect:/products";
     }
 
-    // Search products
+    // Search products - unified search across name, brand, and description
     @GetMapping("/search")
-    public String searchProducts(@RequestParam(required = false) String query,
-            @RequestParam(required = false) String searchType,
-            Model model) {
+    public String searchProducts(@RequestParam(required = false) String query, Model model) {
         List<Product> products;
 
         if (query == null || query.trim().isEmpty()) {
             products = productService.getAvailableProducts();
-        } else if ("brand".equals(searchType)) {
-            products = productService.searchProductsByBrand(query);
         } else {
-            products = productService.searchProductsByName(query);
+            products = productService.searchAvailableProducts(query);
         }
 
         model.addAttribute("products", products);
         model.addAttribute("categories", categoryService.getAllCategories());
         model.addAttribute("searchQuery", query);
-        model.addAttribute("searchType", searchType);
         return "products/list";
     }
 
-    // REST API endpoints for cart functionality
+    // REST API Endpoints
     @GetMapping("/api/products")
     @ResponseBody
-    @CrossOrigin(origins = "http://localhost:3000")
-    public List<Product> getAllProductsAPI() {
-        return productService.getAvailableProducts();
+    public List<Product> getAllProductsApi() {
+        return productService.getAllProducts();
     }
 
     @GetMapping("/api/products/{id}")
     @ResponseBody
-    @CrossOrigin(origins = "http://localhost:3000")
-    public ResponseEntity<Product> getProductByIdAPI(@PathVariable Long id) {
+    public ResponseEntity<Product> getProductByIdApi(@PathVariable Long id) {
         Optional<Product> product = productService.getProductById(id);
         return product.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/api/products/search")
+    @ResponseBody
+    public List<Product> searchProductsApi(@RequestParam String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return productService.getAvailableProducts();
+        }
+        return productService.searchAvailableProducts(query);
+    }
+
 }

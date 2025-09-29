@@ -58,6 +58,14 @@ public class ProductService {
         return productRepository.findByBrandContainingIgnoreCase(brand);
     }
 
+    public List<Product> searchProducts(String query) {
+        return productRepository.findByNameOrBrandOrDescriptionContaining(query);
+    }
+
+    public List<Product> searchAvailableProducts(String query) {
+        return productRepository.findAvailableProductsByNameOrBrandOrDescriptionContaining(query);
+    }
+
     public Product saveProduct(Product product) {
         return productRepository.save(product);
     }

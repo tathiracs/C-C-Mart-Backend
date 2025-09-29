@@ -133,27 +133,15 @@
               </a>
             </li>
           </ul>
-          <!-- Search Form -->
+          <!-- Common Search Bar -->
           <form class="d-flex" method="get" action="/products/search">
-            <select
-              class="form-select me-2"
-              name="searchType"
-              style="width: auto"
-            >
-              <option value="name" th:selected="${searchType == 'name'}">
-                Name
-              </option>
-              <option value="brand" th:selected="${searchType == 'brand'}">
-                Brand
-              </option>
-            </select>
             <input
               class="form-control me-2"
               type="search"
               name="query"
-              placeholder="Search products..."
+              placeholder="Search products by name or brand..."
               th:value="${searchQuery}"
-              style="width: 200px"
+              style="width: 250px"
             />
             <button class="btn btn-outline-light" type="submit">
               <i class="fas fa-search"></i>
