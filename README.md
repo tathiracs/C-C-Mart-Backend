@@ -1,41 +1,70 @@
-# C&C Mart - Grocery Store E-commerce Platform
+# 🏪 C&C Mart - Complete Grocery Store E-commerce Platform
 
-A full-stack grocery store application built with React frontend and Node.js backend with MySQL database.
+> **Status**: ✅ Production Ready | **Version**: 1.0.0 | **Last Updated**: October 19, 2025
 
-## 🏪 Features
+A full-stack grocery store application with comprehensive order management and delivery agent assignment system.
 
-### Customer Features
-- User authentication (login/register)
-- Profile management
-- Order management
-- Contact information
+## ✨ Key Features
 
-### Admin Features
-- Comprehensive admin dashboard
-- User management and monitoring
-- Order management and tracking
-- Sales reports and analytics
-- System configuration and settings
-- Real-time data visualization
+### 🛒 Customer Features
+- ✅ User registration and authentication
+- ✅ Product browsing with category filters
+- ✅ Shopping cart with real-time updates
+- ✅ Secure checkout process
+- ✅ Order history and tracking
+- ✅ View assigned delivery agent details
+- ✅ Profile and account management
+
+### 👨‍💼 Admin Features
+- ✅ **Complete Order Management Workflow**
+  - Approve pending orders
+  - Assign delivery agents
+  - Track order status progression
+  - Real-time statistics dashboard
+- ✅ **Delivery Agent Management**
+  - Add/edit delivery agents
+  - Track availability status
+  - View agent assignments
+- ✅ Product catalog management (CRUD)
+- ✅ Category management
+- ✅ User management
+- ✅ Sales reports and analytics
+- ✅ Role-based access control
+
+### 🚚 Order Workflow
+```
+Customer Places Order → Admin Approves → Admin Assigns Delivery Agent 
+  → Delivery Starts → Order Delivered → Customer Sees Agent Details
+```
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- React 18
-- Material-UI (MUI)
-- React Router
-- Axios
-- React Query
-- React Hook Form
-- React Toastify
+- **React 18** - UI library
+- **Material-UI (MUI)** - Component library
+- **React Router v6** - Navigation
+- **Axios** - HTTP client
+- **React Context API** - State management
+- **React Toastify** - Notifications
+- **LocalStorage** - Cart persistence
 
 ### Backend
-- Node.js
-- Express.js
-- MySQL
-- JWT Authentication
-- bcryptjs
-- Express Validator
+- **Spring Boot 3.x** - Java framework
+- **Java 21** - Programming language
+- **Spring Security** - Authentication & Authorization
+- **JWT** - Token-based authentication
+- **JPA/Hibernate** - ORM
+- **MySQL 8** - Database
+- **Maven** - Build tool
+
+### Database Schema
+- **users** - Customer and admin accounts
+- **products** - Product catalog
+- **categories** - Product categories
+- **orders** - Order records with workflow status
+- **order_items** - Order line items
+- **delivery_agents** - Delivery personnel
+- **cart_items** - Shopping cart
 
 ## 📋 Prerequisites
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Container,
   Typography,
@@ -6,128 +6,192 @@ import {
   Grid,
   Card,
   CardContent,
-  TextField,
   Button,
   Paper,
-  Alert,
   Divider,
+  Chip,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from '@mui/material';
 import {
   LocationOn,
   Phone,
   Email,
   AccessTime,
-  Send,
   Store,
   LocalShipping,
   WhatsApp,
+  Facebook,
+  Instagram,
+  CheckCircle,
+  SupportAgent,
+  QuestionAnswer,
 } from '@mui/icons-material';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-
-const schema = yup.object({
-  name: yup.string().required('Name is required'),
-  email: yup.string().email('Invalid email').required('Email is required'),
-  phone: yup.string().required('Phone number is required'),
-  subject: yup.string().required('Subject is required'),
-  message: yup.string().required('Message is required'),
-});
 
 function Contact() {
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm({
-    resolver: yupResolver(schema),
-  });
-
-  const onSubmit = async (data) => {
-    // Simulate form submission
-    console.log('Contact form data:', data);
-    setSubmitSuccess(true);
-    reset();
-    setTimeout(() => setSubmitSuccess(false), 5000);
-  };
 
   const contactInfo = [
     {
-      icon: <LocationOn color="primary" />,
+      icon: <LocationOn sx={{ fontSize: 40 }} color="primary" />,
       title: 'Store Location',
-      content: 'Main Road, Kurunegala, Sri Lanka',
+      content: 'Main Road, Kurunegala',
+      subcontent: 'Sri Lanka',
       description: 'Visit our physical store for the best shopping experience',
+      action: 'Get Directions',
     },
     {
-      icon: <Phone color="primary" />,
+      icon: <Phone sx={{ fontSize: 40 }} color="primary" />,
       title: 'Phone Number',
       content: '+94 37 222 3456',
+      subcontent: 'Hotline Available',
       description: 'Call us for orders, inquiries, or support',
+      action: 'Call Now',
     },
     {
-      icon: <Email color="primary" />,
+      icon: <Email sx={{ fontSize: 40 }} color="primary" />,
       title: 'Email Address',
       content: 'info@ccmart.lk',
+      subcontent: 'support@ccmart.lk',
       description: 'Send us an email for detailed inquiries',
+      action: 'Send Email',
     },
     {
-      icon: <AccessTime color="primary" />,
+      icon: <AccessTime sx={{ fontSize: 40 }} color="primary" />,
       title: 'Business Hours',
       content: '7:00 AM - 9:00 PM',
+      subcontent: 'Every Day',
       description: 'Open daily, including weekends and holidays',
+      action: 'View Schedule',
     },
   ];
 
   const services = [
     {
-      icon: <Store color="primary" />,
+      icon: <Store sx={{ fontSize: 48 }} color="primary" />,
       title: 'In-Store Shopping',
-      description: 'Browse our fresh selection of groceries in person',
+      description: 'Browse our fresh selection of groceries in person. Experience quality products and personalized service.',
+      features: ['Fresh produce daily', 'Wide product range', 'Friendly staff'],
     },
     {
-      icon: <LocalShipping color="primary" />,
+      icon: <LocalShipping sx={{ fontSize: 48 }} color="primary" />,
       title: 'Home Delivery',
-      description: 'Free delivery within Kurunegala for orders above Rs. 2,500',
+      description: 'Free delivery within Kurunegala for orders above Rs. 2,500. Fast and reliable service to your doorstep.',
+      features: ['Same-day delivery', 'Free above Rs.2,500', 'Track your order'],
     },
     {
-      icon: <WhatsApp color="primary" />,
+      icon: <WhatsApp sx={{ fontSize: 48 }} color="primary" />,
       title: 'WhatsApp Orders',
-      description: 'Send your grocery list via WhatsApp: +94 77 123 4567',
+      description: 'Send your grocery list via WhatsApp and we\'ll prepare your order. Quick and convenient!',
+      features: ['Quick response', 'Easy ordering', 'Order confirmation'],
+    },
+  ];
+
+  const faqs = [
+    {
+      question: 'What are your delivery charges?',
+      answer: 'Free delivery for orders above Rs. 2,500. Below that, delivery charge is Rs. 200.',
+    },
+    {
+      question: 'Do you accept card payments?',
+      answer: 'Yes! We accept Visa, MasterCard, and mobile payment apps.',
+    },
+    {
+      question: 'Can I return products?',
+      answer: 'Yes, you can return any product within 24 hours if you\'re not satisfied.',
     },
   ];
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ py: 6 }}>
-        {/* Header */}
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Typography variant="h2" component="h1" gutterBottom>
-            Contact C&C Mart
-          </Typography>
-          <Typography variant="h5" color="text.secondary" sx={{ mb: 2 }}>
-            We're here to help with all your grocery needs
-          </Typography>
-          <Typography variant="body1" sx={{ maxWidth: '600px', mx: 'auto' }}>
+    <Box sx={{ bgcolor: 'grey.50', minHeight: '100vh' }}>
+      {/* Hero Banner */}
+      <Box
+        sx={{
+          background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+          color: 'white',
+          py: 6,
+          mb: 4,
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+            pointerEvents: 'none',
+          },
+        }}
+      >
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography 
+              variant="h2" 
+              component="h1" 
+              gutterBottom
+              sx={{ 
+                fontWeight: 800,
+                fontSize: { xs: '2.5rem', md: '3.5rem' },
+                textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
+                mb: 2,
+              }}
+            >
+              📞 Contact Us
+            </Typography>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                opacity: 0.95,
+                maxWidth: '700px',
+                mx: 'auto',
+                fontWeight: 400,
+              }}
+            >
+              We're Here to Help with All Your Grocery Needs
+            </Typography>
+          </Box>
+        </Container>
+      </Box>
+
+      <Container maxWidth="lg" sx={{ pb: 6 }}>
+        {/* Introduction */}
+        <Box sx={{ mb: 8, textAlign: 'center' }}>
+          <Typography 
+            variant="body1" 
+            sx={{ 
+              maxWidth: '700px', 
+              mx: 'auto',
+              fontSize: '1.1rem',
+              lineHeight: 1.8,
+              color: 'text.secondary',
+            }}
+          >
             Whether you have questions about our products, need assistance with your order, 
-            or want to provide feedback, we'd love to hear from you.
+            or want to provide feedback, we'd love to hear from you. Our friendly team is 
+            ready to assist you!
           </Typography>
         </Box>
 
         {/* Contact Information Cards */}
-        <Grid container spacing={4} sx={{ mb: 8 }}>
+        <Grid container spacing={4} sx={{ mb: 10 }}>
           {contactInfo.map((info, index) => (
             <Grid item xs={12} sm={6} md={3} key={index}>
               <Card
+                elevation={3}
                 sx={{
                   textAlign: 'center',
-                  p: 3,
+                  p: 4,
                   height: '100%',
-                  transition: 'transform 0.2s',
+                  transition: 'all 0.3s',
+                  borderTop: '4px solid',
+                  borderColor: 'primary.main',
                   '&:hover': {
-                    transform: 'translateY(-4px)',
+                    transform: 'translateY(-8px)',
+                    boxShadow: 8,
+                    borderColor: 'secondary.main',
                   },
                 }}
               >
@@ -135,13 +199,17 @@ function Contact() {
                   <Box sx={{ mb: 2 }}>
                     {info.icon}
                   </Box>
-                  <Typography variant="h6" gutterBottom>
+                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                     {info.title}
                   </Typography>
-                  <Typography variant="body1" color="primary" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  <Typography variant="body1" color="primary.main" sx={{ fontWeight: 'bold', mb: 0.5 }}>
                     {info.content}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {info.subcontent}
+                  </Typography>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
                     {info.description}
                   </Typography>
                 </CardContent>
@@ -150,154 +218,124 @@ function Contact() {
           ))}
         </Grid>
 
-        {/* Contact Form and Map */}
-        <Grid container spacing={6} sx={{ mb: 8 }}>
-          {/* Contact Form */}
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 4 }}>
-              <Typography variant="h4" gutterBottom>
-                Send us a Message
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 4, color: 'text.secondary' }}>
-                Fill out the form below and we'll get back to you as soon as possible.
-              </Typography>
-
-              {submitSuccess && (
-                <Alert severity="success" sx={{ mb: 3 }}>
-                  Thank you for your message! We'll get back to you within 24 hours.
-                </Alert>
-              )}
-
-              <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      {...register('name')}
-                      fullWidth
-                      label="Full Name"
-                      error={!!errors.name}
-                      helperText={errors.name?.message}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      {...register('email')}
-                      fullWidth
-                      label="Email Address"
-                      type="email"
-                      error={!!errors.email}
-                      helperText={errors.email?.message}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      {...register('phone')}
-                      fullWidth
-                      label="Phone Number"
-                      error={!!errors.phone}
-                      helperText={errors.phone?.message}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      {...register('subject')}
-                      fullWidth
-                      label="Subject"
-                      error={!!errors.subject}
-                      helperText={errors.subject?.message}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      {...register('message')}
-                      fullWidth
-                      label="Message"
-                      multiline
-                      rows={4}
-                      error={!!errors.message}
-                      helperText={errors.message?.message}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      size="large"
-                      startIcon={<Send />}
-                      fullWidth
-                    >
-                      Send Message
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Box>
-            </Paper>
-          </Grid>
-
-          {/* Location Map */}
-          <Grid item xs={12} md={6}>
-            <Paper elevation={3} sx={{ p: 4, height: '100%' }}>
-              <Typography variant="h4" gutterBottom>
-                Find Our Store
-              </Typography>
-              <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary' }}>
-                Located on Main Road, Kurunegala - easily accessible with parking available.
-              </Typography>
-              
-              {/* Placeholder for map */}
-              <Box
-                sx={{
-                  width: '100%',
-                  height: '300px',
-                  bgcolor: 'grey.200',
-                  borderRadius: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mb: 3,
-                }}
-              >
-                <Typography variant="body1" color="text.secondary">
-                  [Interactive Map - Main Road, Kurunegala]
+        {/* Location Map */}
+        <Box sx={{ mb: 10 }}>
+          <Grid container justifyContent="center">
+            <Grid item xs={12} md={8}>
+            <Paper 
+              elevation={6} 
+              sx={{ 
+                p: 5, 
+                height: '100%',
+                borderRadius: 3,
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <LocationOn color="primary" sx={{ fontSize: 32, mr: 2 }} />
+                <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                  Find Our Store
                 </Typography>
               </Box>
-              
-              <Typography variant="body2" color="text.secondary">
-                <strong>Landmarks:</strong> Near Kurunegala Clock Tower, opposite to People's Bank
+              <Typography variant="body1" sx={{ mb: 3, color: 'text.secondary', lineHeight: 1.7 }}>
+                Located on Main Road, Kurunegala - easily accessible with ample parking available. 
+                Come visit us for the full C&C Mart experience!
               </Typography>
+              
+              {/* Map Image */}
+              <Box
+                component="img"
+                src="https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=600"
+                alt="Store Location"
+                sx={{
+                  width: '100%',
+                  height: '280px',
+                  objectFit: 'cover',
+                  borderRadius: 2,
+                  mb: 3,
+                  boxShadow: 3,
+                }}
+              />
+              
+              <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 3, borderRadius: 2 }}>
+                <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+                  <LocationOn sx={{ verticalAlign: 'middle', mr: 1 }} />
+                  Main Road, Kurunegala
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.95, lineHeight: 1.6 }}>
+                  <strong>Landmarks:</strong> Near Kurunegala Clock Tower, opposite People's Bank
+                </Typography>
+                <Divider sx={{ my: 2, bgcolor: 'rgba(255,255,255,0.2)' }} />
+                <Typography variant="body2" sx={{ opacity: 0.95 }}>
+                  <strong>Parking:</strong> Available in front of store
+                </Typography>
+              </Box>
             </Paper>
           </Grid>
         </Grid>
+        </Box>
 
         {/* Services Section */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="h3" component="h2" textAlign="center" gutterBottom>
+        <Box sx={{ mb: 10 }}>
+          <Typography 
+            variant="h3" 
+            component="h2" 
+            textAlign="center" 
+            gutterBottom
+            sx={{ fontWeight: 700, mb: 2 }}
+          >
             How to Shop with Us
           </Typography>
-          <Typography variant="body1" textAlign="center" sx={{ mb: 6, opacity: 0.8 }}>
-            Multiple convenient ways to get your groceries
+          <Typography 
+            variant="body1" 
+            textAlign="center" 
+            sx={{ mb: 6, opacity: 0.7, maxWidth: '600px', mx: 'auto' }}
+          >
+            Multiple convenient ways to get your groceries - choose what works best for you!
           </Typography>
           
           <Grid container spacing={4}>
             {services.map((service, index) => (
               <Grid item xs={12} md={4} key={index}>
                 <Card
+                  elevation={4}
                   sx={{
                     textAlign: 'center',
                     p: 4,
                     height: '100%',
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: 10,
+                    },
                   }}
                 >
                   <CardContent>
-                    <Box sx={{ mb: 2 }}>
+                    <Box sx={{ mb: 3 }}>
                       {service.icon}
                     </Box>
-                    <Typography variant="h6" gutterBottom>
+                    <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
                       {service.title}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
                       {service.description}
                     </Typography>
+                    <Divider sx={{ my: 2 }} />
+                    <List dense>
+                      {service.features.map((feature, idx) => (
+                        <ListItem key={idx} disableGutters>
+                          <ListItemIcon sx={{ minWidth: 32 }}>
+                            <CheckCircle color="success" fontSize="small" />
+                          </ListItemIcon>
+                          <ListItemText 
+                            primary={feature}
+                            primaryTypographyProps={{
+                              variant: 'body2',
+                              color: 'text.secondary',
+                            }}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
                   </CardContent>
                 </Card>
               </Grid>
@@ -305,43 +343,145 @@ function Contact() {
           </Grid>
         </Box>
 
+        {/* FAQ Section */}
+        <Box sx={{ mb: 10 }}>
+          <Typography 
+            variant="h3" 
+            component="h2" 
+            textAlign="center" 
+            gutterBottom
+            sx={{ fontWeight: 700, mb: 2 }}
+          >
+            Frequently Asked Questions
+          </Typography>
+          <Typography 
+            variant="body1" 
+            textAlign="center" 
+            sx={{ mb: 6, opacity: 0.7 }}
+          >
+            Quick answers to common questions
+          </Typography>
+          
+          <Grid container spacing={3} justifyContent="center">
+            {faqs.map((faq, index) => (
+              <Grid item xs={12} md={6} key={index}>
+                <Paper 
+                  elevation={2}
+                  sx={{ 
+                    p: 3,
+                    transition: 'all 0.3s',
+                    '&:hover': {
+                      boxShadow: 6,
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'start', mb: 1 }}>
+                    <QuestionAnswer color="primary" sx={{ mr: 2, mt: 0.5 }} />
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      {faq.question}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary" sx={{ ml: 5, lineHeight: 1.7 }}>
+                    {faq.answer}
+                  </Typography>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+
         {/* Emergency Contact */}
         <Paper
-          elevation={3}
+          elevation={8}
           sx={{
-            p: 4,
-            bgcolor: 'error.main',
+            p: 5,
+            background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
             color: 'white',
             textAlign: 'center',
+            borderRadius: 3,
+            mb: 6,
           }}
         >
-          <Typography variant="h5" gutterBottom>
+          <SupportAgent sx={{ fontSize: 60, mb: 2, opacity: 0.9 }} />
+          <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
             Need Urgent Groceries?
           </Typography>
-          <Typography variant="body1" sx={{ mb: 3, opacity: 0.9 }}>
-            For urgent orders or same-day delivery, call us directly or WhatsApp
+          <Typography variant="body1" sx={{ mb: 4, opacity: 0.95, maxWidth: '600px', mx: 'auto', lineHeight: 1.7 }}>
+            For urgent orders or same-day delivery within Kurunegala, contact us directly. 
+            Our team is ready to assist you with your grocery needs!
           </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
             <Button
               variant="contained"
-              color="inherit"
-              sx={{ color: 'error.main' }}
+              size="large"
+              sx={{ 
+                bgcolor: 'white',
+                color: 'primary.main',
+                fontWeight: 600,
+                px: 4,
+                py: 1.5,
+                '&:hover': {
+                  bgcolor: 'grey.100',
+                },
+              }}
               startIcon={<Phone />}
             >
               Call: +94 37 222 3456
             </Button>
             <Button
               variant="contained"
-              color="inherit"
-              sx={{ color: 'success.main' }}
+              size="large"
+              sx={{ 
+                bgcolor: '#25D366',
+                color: 'white',
+                fontWeight: 600,
+                px: 4,
+                py: 1.5,
+                '&:hover': {
+                  bgcolor: '#20BA5A',
+                },
+              }}
               startIcon={<WhatsApp />}
             >
               WhatsApp: +94 77 123 4567
             </Button>
           </Box>
         </Paper>
-      </Box>
-    </Container>
+
+        {/* Social Media */}
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+            Connect With Us
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Follow us on social media for updates, offers, and more!
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+            <Button
+              variant="outlined"
+              startIcon={<Facebook />}
+              sx={{ borderRadius: 2 }}
+            >
+              Facebook
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<Instagram />}
+              sx={{ borderRadius: 2 }}
+            >
+              Instagram
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<WhatsApp />}
+              sx={{ borderRadius: 2 }}
+            >
+              WhatsApp
+            </Button>
+          </Box>
+        </Box>
+      </Container>
+    </Box>
   );
 }
 

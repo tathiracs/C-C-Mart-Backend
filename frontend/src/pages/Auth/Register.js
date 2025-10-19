@@ -22,6 +22,10 @@ const schema = yup.object({
   firstName: yup.string().required('First name is required'),
   lastName: yup.string().required('Last name is required'),
   email: yup.string().email('Invalid email').required('Email is required'),
+  phone: yup
+    .string()
+    .required('Phone number is required')
+    .matches(/^[0-9]{10}$/, 'Phone number must be exactly 10 digits'),
   password: yup
     .string()
     .min(6, 'Password must be at least 6 characters')
@@ -50,11 +54,18 @@ function Register() {
     const result = await registerUser({
       name: `${data.firstName} ${data.lastName}`,
       email: data.email,
+      phone: data.phone,
       password: data.password,
     });
     
     if (result.success) {
-      navigate('/');
+      // Redirect to login page after successful registration
+      navigate('/login', { 
+        state: { 
+          message: 'Registration successful! Please log in with your credentials.',
+          email: data.email 
+        } 
+      });
     } else {
       setError(result.message);
     }
@@ -121,6 +132,20 @@ function Register() {
                   autoComplete="email"
                   error={!!errors.email}
                   helperText={errors.email?.message}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  {...register('phone')}
+                  required
+                  fullWidth
+                  id="phone"
+                  label="Mobile Number"
+                  name="phone"
+                  autoComplete="tel"
+                  placeholder="0771234567"
+                  error={!!errors.phone}
+                  helperText={errors.phone?.message || "Enter 10 digit mobile number"}
                 />
               </Grid>
               <Grid item xs={12}>

@@ -56,12 +56,15 @@ function ProductManagement() {
     name: '',
     description: '',
     price: '',
-    stock_quantity: '',
+    stockQuantity: '',
     unit: '',
-    category_id: '',
-    image_url: '',
-    is_featured: false,
+    categoryId: '',
+    imageUrl: '',
+    isFeatured: false,
+    isActive: true,
   });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -72,10 +75,22 @@ function ProductManagement() {
     try {
       setLoading(true);
       const response = await productsAPI.getProducts();
-      setProducts(response.data.data || []);
+      console.log('Fetched products response:', response);
+      // Backend returns array directly in response.data
+      const productList = Array.isArray(response.data) 
+        ? response.data 
+        : response.data?.data || [];
+      console.log('Product list count:', productList.length);
+      setProducts(productList);
+      setError('');
     } catch (error) {
       console.error('Error fetching products:', error);
-      setError('Failed to load products');
+      console.error('Error response:', error.response?.data);
+      const errorMessage = error.response?.data?.message 
+        || error.response?.data 
+        || 'Failed to load products';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -83,10 +98,18 @@ function ProductManagement() {
 
   const fetchCategories = async () => {
     try {
+      console.log('Fetching categories...');
       const response = await categoriesAPI.getCategories();
-      setCategories(response.data.data || []);
+      console.log('Categories response:', response);
+      // Backend returns array directly in response.data
+      const categoryList = Array.isArray(response.data) 
+        ? response.data 
+        : response.data?.data || [];
+      console.log('Categories list:', categoryList, 'Count:', categoryList.length);
+      setCategories(categoryList);
     } catch (error) {
       console.error('Error fetching categories:', error);
+      toast.error('Failed to load categories');
     }
   };
 
@@ -97,24 +120,30 @@ function ProductManagement() {
         name: product.name,
         description: product.description,
         price: product.price,
-        stock_quantity: product.stock_quantity,
+        stockQuantity: product.stockQuantity,
         unit: product.unit,
-        category_id: product.category_id,
-        image_url: product.image_url,
-        is_featured: product.is_featured,
+        categoryId: product.category?.id || '',
+        imageUrl: product.imageUrl,
+        isFeatured: product.isFeatured,
+        isActive: product.isActive !== false, // Ensure it's true if not explicitly false
       });
+      setImagePreview(product.imageUrl);
+      setImageFile(null);
     } else {
       setEditingProduct(null);
       setFormData({
         name: '',
         description: '',
         price: '',
-        stock_quantity: '',
+        stockQuantity: '',
         unit: '',
-        category_id: '',
-        image_url: '',
-        is_featured: false,
+        categoryId: '',
+        imageUrl: '',
+        isFeatured: false,
+        isActive: true, // New products are active by default
       });
+      setImagePreview(null);
+      setImageFile(null);
     }
     setOpenDialog(true);
   };
@@ -132,41 +161,107 @@ function ProductManagement() {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+        setFormData(prev => ({
+          ...prev,
+          imageUrl: reader.result, // Use base64 for now
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validation
+    if (!formData.name || !formData.price || !formData.categoryId) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    
+    if (parseFloat(formData.price) <= 0) {
+      toast.error('Price must be greater than 0');
+      return;
+    }
+    
+    if (parseInt(formData.stockQuantity) < 0) {
+      toast.error('Stock quantity cannot be negative');
+      return;
+    }
+    
     try {
+      // Prepare data with proper types
+      const productData = {
+        name: formData.name.trim(),
+        description: formData.description?.trim() || '',
+        price: parseFloat(formData.price),
+        stockQuantity: parseInt(formData.stockQuantity) || 0,
+        unit: formData.unit?.trim() || 'piece',
+        categoryId: parseInt(formData.categoryId),
+        imageUrl: formData.imageUrl?.trim() || '',
+        isFeatured: Boolean(formData.isFeatured),
+        isActive: true,
+      };
+      
+      console.log('Submitting product data:', productData);
+      
       if (editingProduct) {
-        await productsAPI.updateProduct(editingProduct.id, formData);
+        const response = await productsAPI.updateProduct(editingProduct.id, productData);
+        console.log('Update response:', response);
         toast.success('Product updated successfully!');
       } else {
-        await productsAPI.createProduct(formData);
+        const response = await productsAPI.createProduct(productData);
+        console.log('Create response:', response);
         toast.success('Product created successfully!');
       }
-      fetchProducts();
+      
+      await fetchProducts();
       handleCloseDialog();
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error('Failed to save product');
+      console.error('Error response:', error.response?.data);
+      const errorMessage = error.response?.data?.message 
+        || error.response?.data 
+        || error.message 
+        || 'Failed to save product';
+      toast.error(errorMessage);
     }
   };
 
   const handleDelete = async (productId) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      try {
-        await productsAPI.deleteProduct(productId);
-        toast.success('Product deleted successfully!');
-        fetchProducts();
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        toast.error('Failed to delete product');
-      }
+    if (!window.confirm('Are you sure you want to delete this product? This will hide it from customers.')) {
+      return;
+    }
+    
+    try {
+      console.log('Deleting product:', productId);
+      const response = await productsAPI.deleteProduct(productId);
+      console.log('Delete response:', response);
+      toast.success('Product deleted successfully!');
+      await fetchProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      console.error('Error response:', error.response?.data);
+      const errorMessage = error.response?.data?.message 
+        || error.response?.data 
+        || error.message 
+        || 'Failed to delete product';
+      toast.error(errorMessage);
     }
   };
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || product.category_id == selectedCategory;
+    const matchesCategory = !selectedCategory || product.category?.id == selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -272,9 +367,13 @@ function ProductManagement() {
                 <TableRow key={product.id}>
                   <TableCell>
                     <Avatar
-                      src={product.image_url}
+                      src={product.imageUrl || 'https://via.placeholder.com/50'}
                       alt={product.name}
                       sx={{ width: 50, height: 50 }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/50?text=' + product.name.charAt(0);
+                      }}
                     >
                       {product.name.charAt(0)}
                     </Avatar>
@@ -291,7 +390,7 @@ function ProductManagement() {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={product.category_name}
+                      label={product.category?.name || 'No Category'}
                       size="small"
                       color="primary"
                       variant="outlined"
@@ -307,16 +406,16 @@ function ProductManagement() {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={`${product.stock_quantity} ${product.unit}`}
+                      label={`${product.stockQuantity || 0} ${product.unit || 'units'}`}
                       size="small"
-                      color={product.stock_quantity > 10 ? 'success' : 'warning'}
+                      color={product.stockQuantity > 10 ? 'success' : product.stockQuantity > 0 ? 'warning' : 'error'}
                     />
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={product.is_featured ? 'Yes' : 'No'}
+                      label={product.isFeatured ? 'Yes' : 'No'}
                       size="small"
-                      color={product.is_featured ? 'success' : 'default'}
+                      color={product.isFeatured ? 'success' : 'default'}
                     />
                   </TableCell>
                   <TableCell>
@@ -374,8 +473,8 @@ function ProductManagement() {
                   <FormControl fullWidth required>
                     <InputLabel>Category</InputLabel>
                     <Select
-                      name="category_id"
-                      value={formData.category_id}
+                      name="categoryId"
+                      value={formData.categoryId}
                       onChange={handleInputChange}
                       label="Category"
                     >
@@ -413,9 +512,9 @@ function ProductManagement() {
                   <TextField
                     fullWidth
                     label="Stock Quantity"
-                    name="stock_quantity"
+                    name="stockQuantity"
                     type="number"
-                    value={formData.stock_quantity}
+                    value={formData.stockQuantity}
                     onChange={handleInputChange}
                     required
                   />
@@ -432,22 +531,69 @@ function ProductManagement() {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Image URL"
-                    name="image_url"
-                    value={formData.image_url}
-                    onChange={handleInputChange}
-                    placeholder="https://example.com/image.jpg"
-                  />
+                  <Box>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Product Image
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        fullWidth
+                        sx={{ mb: 1 }}
+                      >
+                        Upload Image File
+                        <input
+                          type="file"
+                          hidden
+                          accept="image/*"
+                          onChange={handleImageChange}
+                        />
+                      </Button>
+                      <Typography variant="caption" display="block" gutterBottom>
+                        OR enter image URL below
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        label="Image URL"
+                        name="imageUrl"
+                        value={formData.imageUrl}
+                        onChange={(e) => {
+                          handleInputChange(e);
+                          setImagePreview(e.target.value);
+                        }}
+                        placeholder="https://example.com/image.jpg"
+                        size="small"
+                      />
+                    </Box>
+                    {imagePreview && (
+                      <Box sx={{ mt: 2, textAlign: 'center' }}>
+                        <Typography variant="caption" display="block" gutterBottom>
+                          Image Preview:
+                        </Typography>
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: '200px',
+                            objectFit: 'contain',
+                            border: '1px solid #ddd',
+                            borderRadius: '4px',
+                            padding: '8px',
+                          }}
+                        />
+                      </Box>
+                    )}
+                  </Box>
                 </Grid>
                 <Grid item xs={12}>
                   <FormControl>
                     <label>
                       <input
                         type="checkbox"
-                        name="is_featured"
-                        checked={formData.is_featured}
+                        name="isFeatured"
+                        checked={formData.isFeatured}
                         onChange={handleInputChange}
                       />
                       Featured Product

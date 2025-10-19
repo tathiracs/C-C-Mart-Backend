@@ -8,55 +8,28 @@ import {
   TextField,
   Button,
   Avatar,
-  Divider,
-  Alert,
   CircularProgress,
   Card,
   CardContent,
   CardHeader,
-  Switch,
-  FormControlLabel,
-  FormGroup,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  IconButton,
   Chip,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
 } from '@mui/material';
 import {
   Person,
   Email,
   Phone,
   Home,
-  Lock,
-  Notifications,
-  Security,
   Edit,
   Save,
   Cancel,
-  Visibility,
-  VisibilityOff,
-  PhotoCamera,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { usersAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 
 function AccountSettings() {
   const { user, updateProfile, loadUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
-  const [showPasswords, setShowPasswords] = useState({
-    current: false,
-    new: false,
-    confirm: false,
-  });
 
   // Profile form data
   const [profileData, setProfileData] = useState({
@@ -64,22 +37,6 @@ function AccountSettings() {
     email: '',
     phone: '',
     address: '',
-  });
-
-  // Password form data
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
-
-  // User preferences
-  const [preferences, setPreferences] = useState({
-    emailNotifications: true,
-    smsNotifications: false,
-    orderUpdates: true,
-    promotionalEmails: true,
-    securityAlerts: true,
   });
 
   // Initialize form data when user data loads
@@ -99,30 +56,6 @@ function AccountSettings() {
     setProfileData({
       ...profileData,
       [e.target.name]: e.target.value,
-    });
-  };
-
-  // Handle password form changes
-  const handlePasswordChange = (e) => {
-    setPasswordData({
-      ...passwordData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  // Handle preferences changes
-  const handlePreferenceChange = (name) => (e) => {
-    setPreferences({
-      ...preferences,
-      [name]: e.target.checked,
-    });
-  };
-
-  // Toggle password visibility
-  const togglePasswordVisibility = (field) => {
-    setShowPasswords({
-      ...showPasswords,
-      [field]: !showPasswords[field],
     });
   };
 
@@ -153,53 +86,6 @@ function AccountSettings() {
       });
     }
     setEditMode(false);
-  };
-
-  // Change password
-  const handleChangePassword = async () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New passwords do not match');
-      return;
-    }
-
-    if (passwordData.newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters long');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await usersAPI.changePassword({
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-      });
-      
-      toast.success('Password changed successfully');
-      setPasswordDialogOpen(false);
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      });
-    } catch (error) {
-      const message = error.response?.data?.message || 'Failed to change password';
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Save preferences
-  const handleSavePreferences = async () => {
-    setLoading(true);
-    try {
-      await usersAPI.updatePreferences(preferences);
-      toast.success('Preferences updated successfully');
-    } catch (error) {
-      toast.error('Failed to update preferences');
-    } finally {
-      setLoading(false);
-    }
   };
 
   if (!user) {
@@ -338,193 +224,12 @@ function AccountSettings() {
                   size="small"
                 />
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                  Member since {new Date(user.created_at).toLocaleDateString()}
+                  Member since {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Recently'}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
-
-          {/* Security Settings */}
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardHeader title="Security" />
-              <CardContent>
-                <List>
-                  <ListItem>
-                    <ListItemText
-                      primary="Password"
-                      secondary="Last changed: Never"
-                    />
-                    <ListItemSecondaryAction>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<Lock />}
-                        onClick={() => setPasswordDialogOpen(true)}
-                      >
-                        Change
-                      </Button>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                  <Divider />
-                  <ListItem>
-                    <ListItemText
-                      primary="Two-Factor Authentication"
-                      secondary="Add an extra layer of security"
-                    />
-                    <ListItemSecondaryAction>
-                      <Button variant="outlined" size="small" disabled>
-                        Setup
-                      </Button>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                </List>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          {/* Notification Preferences */}
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardHeader title="Notifications" />
-              <CardContent>
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={preferences.emailNotifications}
-                        onChange={handlePreferenceChange('emailNotifications')}
-                      />
-                    }
-                    label="Email Notifications"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={preferences.orderUpdates}
-                        onChange={handlePreferenceChange('orderUpdates')}
-                      />
-                    }
-                    label="Order Updates"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={preferences.promotionalEmails}
-                        onChange={handlePreferenceChange('promotionalEmails')}
-                      />
-                    }
-                    label="Promotional Emails"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={preferences.securityAlerts}
-                        onChange={handlePreferenceChange('securityAlerts')}
-                      />
-                    }
-                    label="Security Alerts"
-                  />
-                </FormGroup>
-                <Box sx={{ mt: 2 }}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={handleSavePreferences}
-                    disabled={loading}
-                  >
-                    Save Preferences
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
         </Grid>
-
-        {/* Password Change Dialog */}
-        <Dialog
-          open={passwordDialogOpen}
-          onClose={() => setPasswordDialogOpen(false)}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>Change Password</DialogTitle>
-          <DialogContent>
-            <Box sx={{ pt: 1 }}>
-              <TextField
-                fullWidth
-                label="Current Password"
-                name="currentPassword"
-                type={showPasswords.current ? 'text' : 'password'}
-                value={passwordData.currentPassword}
-                onChange={handlePasswordChange}
-                sx={{ mb: 2 }}
-                InputProps={{
-                  endAdornment: (
-                    <IconButton
-                      onClick={() => togglePasswordVisibility('current')}
-                      edge="end"
-                    >
-                      {showPasswords.current ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  ),
-                }}
-              />
-              <TextField
-                fullWidth
-                label="New Password"
-                name="newPassword"
-                type={showPasswords.new ? 'text' : 'password'}
-                value={passwordData.newPassword}
-                onChange={handlePasswordChange}
-                sx={{ mb: 2 }}
-                InputProps={{
-                  endAdornment: (
-                    <IconButton
-                      onClick={() => togglePasswordVisibility('new')}
-                      edge="end"
-                    >
-                      {showPasswords.new ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  ),
-                }}
-              />
-              <TextField
-                fullWidth
-                label="Confirm New Password"
-                name="confirmPassword"
-                type={showPasswords.confirm ? 'text' : 'password'}
-                value={passwordData.confirmPassword}
-                onChange={handlePasswordChange}
-                InputProps={{
-                  endAdornment: (
-                    <IconButton
-                      onClick={() => togglePasswordVisibility('confirm')}
-                      edge="end"
-                    >
-                      {showPasswords.confirm ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  ),
-                }}
-              />
-            </Box>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={() => setPasswordDialogOpen(false)}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleChangePassword}
-              variant="contained"
-              disabled={loading || !passwordData.currentPassword || !passwordData.newPassword}
-            >
-              {loading ? <CircularProgress size={20} /> : 'Change Password'}
-            </Button>
-          </DialogActions>
-        </Dialog>
       </Box>
     </Container>
   );

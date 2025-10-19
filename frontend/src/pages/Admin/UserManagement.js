@@ -55,7 +55,7 @@ function UserManagement() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'user',
+    role: 'CUSTOMER',
     is_active: true,
   });
 
@@ -67,7 +67,24 @@ function UserManagement() {
     try {
       setLoading(true);
       const response = await usersAPI.getUsers();
-      setUsers(response.data.data || []);
+      const raw = Array.isArray(response.data)
+        ? response.data
+        : Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
+
+      const normalised = raw.map((user) => ({
+        ...user,
+        // Align casing between backend camelCase fields and UI snake_case expectations
+        created_at: user.created_at || user.createdAt || null,
+        updated_at: user.updated_at || user.updatedAt || null,
+        is_active: typeof user.is_active === 'boolean' ? user.is_active : (user.isActive ?? true),
+        role: user.role || user.role?.toUpperCase?.() || 'CUSTOMER',
+        name: user.name || `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || user.email,
+        email: user.email,
+      }));
+
+      setUsers(normalised);
     } catch (error) {
       console.error('Error fetching users:', error);
       setError('Failed to load users');
@@ -90,7 +107,7 @@ function UserManagement() {
       setFormData({
         name: '',
         email: '',
-        role: 'user',
+        role: 'CUSTOMER',
         is_active: true,
       });
     }
@@ -114,7 +131,20 @@ function UserManagement() {
     e.preventDefault();
     try {
       if (editingUser) {
-        await usersAPI.updateUser(editingUser.id, formData);
+        // Transform data to match backend expectations (camelCase)
+        const userData = {
+          name: formData.name,
+          email: formData.email,
+          role: formData.role?.toLowerCase(), // Backend expects lowercase
+          isActive: formData.is_active, // Convert snake_case to camelCase
+        };
+        
+        console.log('Sending user data:', userData);
+        console.log('User ID:', editingUser.id);
+        
+        const response = await usersAPI.updateUser(editingUser.id, userData);
+        console.log('Update response:', response);
+        
         toast.success('User updated successfully!');
       } else {
         // For new users, we'll need to create them with a password
@@ -125,8 +155,23 @@ function UserManagement() {
       fetchUsers();
       handleCloseDialog();
     } catch (error) {
-      console.error('Error saving user:', error);
-      toast.error('Failed to save user');
+      console.error('Full error object:', error);
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      
+      let errorMessage = 'Failed to save user';
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     }
   };
 
@@ -146,7 +191,10 @@ function UserManagement() {
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = !roleFilter || user.role === roleFilter;
+    const userRoleUpper = user.role ? user.role.toUpperCase() : '';
+    const matchesRole = !roleFilter || 
+                       (roleFilter === 'admin' && userRoleUpper === 'ADMIN') ||
+                       (roleFilter === 'customer' && userRoleUpper === 'CUSTOMER');
     const matchesStatus = statusFilter === '' || 
                          (statusFilter === 'active' && user.is_active) ||
                          (statusFilter === 'inactive' && !user.is_active);
@@ -155,8 +203,8 @@ function UserManagement() {
 
   const getTotalUsers = () => users.length;
   const getActiveUsers = () => users.filter(user => user.is_active).length;
-  const getAdminUsers = () => users.filter(user => user.role === 'admin').length;
-  const getCustomerUsers = () => users.filter(user => user.role === 'user').length;
+  const getAdminUsers = () => users.filter(user => user.role && user.role.toUpperCase() === 'ADMIN').length;
+  const getCustomerUsers = () => users.filter(user => user.role && user.role.toUpperCase() === 'CUSTOMER').length;
 
   if (loading) {
     return (
@@ -286,15 +334,15 @@ function UserManagement() {
             <Grid item xs={12} md={3}>
               <FormControl fullWidth>
                 <InputLabel>Role</InputLabel>
-                <Select
-                  value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                  label="Role"
-                >
-                  <MenuItem value="">All Roles</MenuItem>
-                  <MenuItem value="admin">Admin</MenuItem>
-                  <MenuItem value="user">Customer</MenuItem>
-                </Select>
+                  <Select
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                    label="Role"
+                  >
+                    <MenuItem value="">All Roles</MenuItem>
+                    <MenuItem value="admin">Admin</MenuItem>
+                    <MenuItem value="customer">Customer</MenuItem>
+                  </Select>
               </FormControl>
             </Grid>
             <Grid item xs={12} md={3}>
@@ -372,10 +420,10 @@ function UserManagement() {
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={user.role === 'admin' ? 'Admin' : 'Customer'}
-                      color={user.role === 'admin' ? 'warning' : 'primary'}
+                      label={user.role && user.role.toUpperCase() === 'ADMIN' ? 'Admin' : 'Customer'}
+                      color={user.role && user.role.toUpperCase() === 'ADMIN' ? 'warning' : 'primary'}
                       size="small"
-                      icon={user.role === 'admin' ? <AdminPanelSettings /> : <Person />}
+                      icon={user.role && user.role.toUpperCase() === 'ADMIN' ? <AdminPanelSettings /> : <Person />}
                     />
                   </TableCell>
                   <TableCell>
@@ -405,7 +453,7 @@ function UserManagement() {
                         size="small"
                         onClick={() => handleDelete(user.id)}
                         color="error"
-                        disabled={user.role === 'admin' && user.email === 'admin@ccmart.lk'}
+                        disabled={user.role && user.role.toUpperCase() === 'ADMIN' && user.email === 'admin@ccmart.lk'}
                       >
                         <Delete />
                       </IconButton>
@@ -467,8 +515,8 @@ function UserManagement() {
                       onChange={handleInputChange}
                       label="Role"
                     >
-                      <MenuItem value="user">Customer</MenuItem>
-                      <MenuItem value="admin">Admin</MenuItem>
+                      <MenuItem value="CUSTOMER">Customer</MenuItem>
+                      <MenuItem value="ADMIN">Admin</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>

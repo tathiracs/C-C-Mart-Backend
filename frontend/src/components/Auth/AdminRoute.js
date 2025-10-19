@@ -23,7 +23,7 @@ function AdminRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user?.role !== 'admin') {
+  if (user?.role?.toLowerCase() !== 'admin') {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="error">

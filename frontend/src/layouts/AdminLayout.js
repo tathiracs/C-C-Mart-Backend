@@ -28,6 +28,8 @@ import {
   Logout,
   Store,
   Notifications,
+  LocalShipping,
+  AssignmentInd,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -36,7 +38,8 @@ const drawerWidth = 240;
 const menuItems = [
   { text: 'Dashboard', icon: <Dashboard />, path: '/admin' },
   { text: 'Products', icon: <Inventory />, path: '/admin/products' },
-  { text: 'Orders', icon: <ShoppingCart />, path: '/admin/orders' },
+  { text: 'Order Management', icon: <AssignmentInd />, path: '/admin/orders' },
+  { text: 'Delivery Agents', icon: <LocalShipping />, path: '/admin/delivery-agents' },
   { text: 'Users', icon: <People />, path: '/admin/users' },
   { text: 'Reports', icon: <Assessment />, path: '/admin/reports' },
 ];
@@ -155,18 +158,13 @@ function AdminLayout() {
               open={Boolean(anchorEl)}
               onClose={handleMenuClose}
             >
-              <MenuItem onClick={handleMenuClose}>
-                <Typography variant="body2" sx={{ px: 1 }}>
+              <MenuItem disabled>
+                <Typography variant="body2" color="text.primary" fontWeight="bold">
                   {user?.name}
                 </Typography>
               </MenuItem>
-              <MenuItem onClick={handleMenuClose}>
-                <Typography variant="body2" sx={{ px: 1 }}>
-                  {user?.email}
-                </Typography>
-              </MenuItem>
               <Divider />
-              <MenuItem onClick={() => navigate('/')}>
+              <MenuItem onClick={() => { navigate('/'); handleMenuClose(); }}>
                 <Typography variant="body2">View Store</Typography>
               </MenuItem>
               <MenuItem onClick={handleLogout}>

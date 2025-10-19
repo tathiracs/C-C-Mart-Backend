@@ -11,7 +11,6 @@ import AdminRoute from './components/Auth/AdminRoute';
 import Home from './pages/Home/Home';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
-import ProductDetails from './pages/Products/ProductDetails';
 import Products from './pages/Products/Products';
 import About from './pages/About/About';
 import Contact from './pages/Contact/Contact';
@@ -32,10 +31,12 @@ import OrderDetails from './pages/Orders/OrderDetails';
 // Admin Pages (Member 4)
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ProductManagement from './pages/Admin/ProductManagement';
-import OrderManagement from './pages/Admin/OrderManagement';
+import AdminOrderManagement from './pages/Admin/AdminOrderManagement';
 import UserManagement from './pages/Admin/UserManagement';
 import ReportsAnalytics from './pages/Admin/ReportsAnalytics';
+import AdminDeliveryAgents from './pages/Admin/AdminDeliveryAgents';
 import TestAPI from './pages/Test/TestAPI';
+import TestOrdersAPI from './pages/Test/TestOrdersAPI';
 
 function App() {
   return (
@@ -47,13 +48,13 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="products" element={<Products />} />
-          <Route path="products/:id" element={<ProductDetails />} />
           <Route path="about" element={<About />} />
           <Route path="contact" element={<Contact />} />
           <Route path="delivery" element={<DeliveryInfo />} />
           <Route path="faq" element={<FAQ />} />
           <Route path="returns" element={<Returns />} />
           <Route path="test" element={<TestAPI />} />
+          <Route path="test-orders" element={<TestOrdersAPI />} />
           
           {/* Customer Routes (Private) */}
           <Route path="profile" element={
@@ -85,21 +86,22 @@ function App() {
             </PrivateRoute>
           } />
           
-          {/* Admin Routes */}
-          <Route path="admin" element={
-            <AdminRoute>
-              <AdminLayout />
-            </AdminRoute>
-          }>
-            <Route index element={<AdminDashboard />} />
-            <Route path="products" element={<ProductManagement />} />
-            <Route path="orders" element={<OrderManagement />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="reports" element={<ReportsAnalytics />} />
-          </Route>
-          
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+
+        {/* Admin Routes - Separate from Layout to avoid showing footer */}
+        <Route path="admin" element={
+          <AdminRoute>
+            <AdminLayout />
+          </AdminRoute>
+        }>
+          <Route index element={<AdminDashboard />} />
+          <Route path="products" element={<ProductManagement />} />
+          <Route path="orders" element={<AdminOrderManagement />} />
+          <Route path="delivery-agents" element={<AdminDeliveryAgents />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="reports" element={<ReportsAnalytics />} />
         </Route>
       </Routes>
     </Box>

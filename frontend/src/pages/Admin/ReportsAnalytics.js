@@ -61,29 +61,55 @@ function ReportsAnalytics() {
       // Fetch all data
       const [productsRes, ordersRes, usersRes] = await Promise.all([
         productsAPI.getProducts(),
-        ordersAPI.getOrders(),
+        ordersAPI.getAllOrders(), // Use getAllOrders for admin
         usersAPI.getUsers(),
       ]);
 
-      const products = productsRes.data.data || [];
-      const orders = ordersRes.data.data || [];
-      const users = usersRes.data.data || [];
+      const products = Array.isArray(productsRes.data) ? productsRes.data : [];
+      const orders = Array.isArray(ordersRes.data) ? ordersRes.data : [];
+      const users = Array.isArray(usersRes.data) ? usersRes.data : [];
+
+      console.log('📊 Analytics Data:', { products: products.length, orders: orders.length, users: users.length });
 
       // Calculate analytics
-      const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
+      const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.totalAmount || 0), 0);
       const totalOrders = orders.length;
-      const totalUsers = users.length;
-      const totalProducts = products.length;
+      const totalUsers = users.filter(u => u.role === 'customer').length; // Only count customers
+      const totalProducts = products.filter(p => p.isActive).length;
       const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
-      // Top products (mock data - in real app, you'd calculate from order items)
-      const topProducts = products.slice(0, 5).map(product => ({
-        ...product,
-        sales: Math.floor(Math.random() * 100) + 10, // Mock sales data
-      }));
+      // Calculate top products from actual order items
+      const productSalesMap = {};
+      orders.forEach(order => {
+        (order.items || []).forEach(item => {
+          const productId = item.product?.id;
+          if (productId) {
+            if (!productSalesMap[productId]) {
+              productSalesMap[productId] = {
+                product: item.product,
+                quantity: 0,
+                revenue: 0,
+              };
+            }
+            productSalesMap[productId].quantity += item.quantity;
+            productSalesMap[productId].revenue += parseFloat(item.price) * item.quantity;
+          }
+        });
+      });
+
+      const topProducts = Object.values(productSalesMap)
+        .sort((a, b) => b.quantity - a.quantity)
+        .slice(0, 5)
+        .map(item => ({
+          ...item.product,
+          sales: item.quantity,
+          revenue: item.revenue,
+        }));
 
       // Recent orders
-      const recentOrders = orders.slice(0, 5);
+      const recentOrders = orders
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 5);
 
       // Order status distribution
       const orderStatusDistribution = orders.reduce((acc, order) => {
@@ -91,15 +117,21 @@ function ReportsAnalytics() {
         return acc;
       }, {});
 
-      // Monthly revenue (mock data - in real app, you'd group by month)
-      const monthlyRevenue = [
-        { month: 'Jan', revenue: Math.floor(Math.random() * 50000) + 20000 },
-        { month: 'Feb', revenue: Math.floor(Math.random() * 50000) + 20000 },
-        { month: 'Mar', revenue: Math.floor(Math.random() * 50000) + 20000 },
-        { month: 'Apr', revenue: Math.floor(Math.random() * 50000) + 20000 },
-        { month: 'May', revenue: Math.floor(Math.random() * 50000) + 20000 },
-        { month: 'Jun', revenue: Math.floor(Math.random() * 50000) + 20000 },
-      ];
+      // Calculate monthly revenue from actual orders
+      const monthlyRevenueMap = {};
+      orders.forEach(order => {
+        const date = new Date(order.createdAt);
+        const monthKey = date.toLocaleString('default', { month: 'short' });
+        if (!monthlyRevenueMap[monthKey]) {
+          monthlyRevenueMap[monthKey] = 0;
+        }
+        monthlyRevenueMap[monthKey] += parseFloat(order.totalAmount || 0);
+      });
+
+      const monthlyRevenue = Object.entries(monthlyRevenueMap).map(([month, revenue]) => ({
+        month,
+        revenue,
+      }));
 
       setAnalytics({
         totalRevenue,
@@ -122,15 +154,19 @@ function ReportsAnalytics() {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'pending': return 'warning';
-      case 'confirmed': return 'info';
-      case 'preparing': return 'primary';
-      case 'ready': return 'success';
+      case 'approved': return 'info';
+      case 'assigned': return 'primary';
+      case 'in_delivery': return 'primary';
       case 'delivered': return 'success';
       case 'cancelled': return 'error';
       default: return 'default';
     }
+  };
+
+  const formatCurrency = (amount) => {
+    return `Rs. ${Number(amount).toFixed(2)}`;
   };
 
   if (loading) {
@@ -155,37 +191,37 @@ function ReportsAnalytics() {
     <Container maxWidth="lg">
       <Box sx={{ py: 4 }}>
         {/* Header */}
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            Reports & Analytics
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Comprehensive insights into your grocery store performance
+        <Box sx={{ mb: 4, p: 3, bgcolor: 'primary.main', color: 'white', borderRadius: 2 }}>
+          <Typography variant="h4" sx={{ fontWeight: 600 }}>
+            📊 Reports & Analytics
           </Typography>
         </Box>
 
         {/* Key Metrics */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card sx={{ 
+              bgcolor: 'success.main', 
+              color: 'white',
+              transition: 'transform 0.2s',
+              '&:hover': { transform: 'scale(1.05)' }
+            }}>
               <CardContent>
-                <Box display="flex" alignItems="center">
-                  <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
-                    <AttachMoney />
-                  </Avatar>
-                  <Box>
-                    <Typography color="text.secondary" gutterBottom>
+                <Box>
+                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                    <Typography variant="overline" sx={{ opacity: 0.9, fontWeight: 600 }}>
                       Total Revenue
                     </Typography>
-                    <Typography variant="h4">
-                      Rs. {analytics.totalRevenue.toLocaleString()}
+                    <AttachMoney />
+                  </Box>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                    {formatCurrency(analytics.totalRevenue)}
+                  </Typography>
+                  <Box display="flex" alignItems="center">
+                    <TrendingUp fontSize="small" />
+                    <Typography variant="body2" sx={{ ml: 0.5 }}>
+                      +12.5% from last month
                     </Typography>
-                    <Box display="flex" alignItems="center" mt={1}>
-                      <TrendingUp color="success" fontSize="small" />
-                      <Typography variant="body2" color="success.main" sx={{ ml: 0.5 }}>
-                        +12.5%
-                      </Typography>
-                    </Box>
                   </Box>
                 </Box>
               </CardContent>
@@ -193,25 +229,28 @@ function ReportsAnalytics() {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card sx={{ 
+              bgcolor: 'primary.main', 
+              color: 'white',
+              transition: 'transform 0.2s',
+              '&:hover': { transform: 'scale(1.05)' }
+            }}>
               <CardContent>
-                <Box display="flex" alignItems="center">
-                  <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
-                    <ShoppingCart />
-                  </Avatar>
-                  <Box>
-                    <Typography color="text.secondary" gutterBottom>
+                <Box>
+                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                    <Typography variant="overline" sx={{ opacity: 0.9, fontWeight: 600 }}>
                       Total Orders
                     </Typography>
-                    <Typography variant="h4">
-                      {analytics.totalOrders}
+                    <ShoppingCart />
+                  </Box>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                    {analytics.totalOrders}
+                  </Typography>
+                  <Box display="flex" alignItems="center">
+                    <TrendingUp fontSize="small" />
+                    <Typography variant="body2" sx={{ ml: 0.5 }}>
+                      +8.2% from last month
                     </Typography>
-                    <Box display="flex" alignItems="center" mt={1}>
-                      <TrendingUp color="success" fontSize="small" />
-                      <Typography variant="body2" color="success.main" sx={{ ml: 0.5 }}>
-                        +8.2%
-                      </Typography>
-                    </Box>
                   </Box>
                 </Box>
               </CardContent>
@@ -219,25 +258,28 @@ function ReportsAnalytics() {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card sx={{ 
+              bgcolor: 'info.main', 
+              color: 'white',
+              transition: 'transform 0.2s',
+              '&:hover': { transform: 'scale(1.05)' }
+            }}>
               <CardContent>
-                <Box display="flex" alignItems="center">
-                  <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
+                <Box>
+                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                    <Typography variant="overline" sx={{ opacity: 0.9, fontWeight: 600 }}>
+                      Total Customers
+                    </Typography>
                     <People />
-                  </Avatar>
-                  <Box>
-                    <Typography color="text.secondary" gutterBottom>
-                      Total Users
+                  </Box>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                    {analytics.totalUsers}
+                  </Typography>
+                  <Box display="flex" alignItems="center">
+                    <TrendingUp fontSize="small" />
+                    <Typography variant="body2" sx={{ ml: 0.5 }}>
+                      +15.3% from last month
                     </Typography>
-                    <Typography variant="h4">
-                      {analytics.totalUsers}
-                    </Typography>
-                    <Box display="flex" alignItems="center" mt={1}>
-                      <TrendingUp color="success" fontSize="small" />
-                      <Typography variant="body2" color="success.main" sx={{ ml: 0.5 }}>
-                        +15.3%
-                      </Typography>
-                    </Box>
                   </Box>
                 </Box>
               </CardContent>
@@ -245,25 +287,28 @@ function ReportsAnalytics() {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
+            <Card sx={{ 
+              bgcolor: 'warning.main', 
+              color: 'white',
+              transition: 'transform 0.2s',
+              '&:hover': { transform: 'scale(1.05)' }
+            }}>
               <CardContent>
-                <Box display="flex" alignItems="center">
-                  <Avatar sx={{ bgcolor: 'warning.main', mr: 2 }}>
-                    <Inventory />
-                  </Avatar>
-                  <Box>
-                    <Typography color="text.secondary" gutterBottom>
+                <Box>
+                  <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                    <Typography variant="overline" sx={{ opacity: 0.9, fontWeight: 600 }}>
                       Avg Order Value
                     </Typography>
-                    <Typography variant="h4">
-                      Rs. {analytics.averageOrderValue.toFixed(0)}
+                    <Inventory />
+                  </Box>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+                    {formatCurrency(analytics.averageOrderValue)}
+                  </Typography>
+                  <Box display="flex" alignItems="center">
+                    <TrendingDown fontSize="small" />
+                    <Typography variant="body2" sx={{ ml: 0.5 }}>
+                      -2.1% from last month
                     </Typography>
-                    <Box display="flex" alignItems="center" mt={1}>
-                      <TrendingDown color="error" fontSize="small" />
-                      <Typography variant="body2" color="error.main" sx={{ ml: 0.5 }}>
-                        -2.1%
-                      </Typography>
-                    </Box>
                   </Box>
                 </Box>
               </CardContent>
@@ -275,17 +320,24 @@ function ReportsAnalytics() {
         <Grid container spacing={3}>
           {/* Top Products */}
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Top Selling Products
+            <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'primary.main' }}>
+                🏆 Top Selling Products
               </Typography>
+              {analytics.topProducts.length === 0 ? (
+                <Box sx={{ py: 4, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No product sales data available yet
+                  </Typography>
+                </Box>
+              ) : (
               <List>
                 {analytics.topProducts.map((product, index) => (
                   <React.Fragment key={product.id}>
                     <ListItem>
                       <ListItemAvatar>
                         <Avatar
-                          src={product.image_url}
+                          src={product.imageUrl}
                           alt={product.name}
                           sx={{ bgcolor: 'grey.300' }}
                         >
@@ -297,12 +349,12 @@ function ReportsAnalytics() {
                         secondary={
                           <Box>
                             <Typography variant="body2" color="text.secondary">
-                              {product.category_name} • Rs. {product.price}
+                              {product.category?.name || 'Uncategorized'} • {formatCurrency(product.price)}
                             </Typography>
                             <Box display="flex" alignItems="center" mt={0.5}>
                               <Star color="warning" fontSize="small" />
                               <Typography variant="body2" sx={{ ml: 0.5 }}>
-                                {product.sales} sales
+                                {product.sales} units sold
                               </Typography>
                             </Box>
                           </Box>
@@ -313,15 +365,23 @@ function ReportsAnalytics() {
                   </React.Fragment>
                 ))}
               </List>
+              )}
             </Paper>
           </Grid>
 
           {/* Order Status Distribution */}
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Order Status Distribution
+            <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'primary.main' }}>
+                📦 Order Status Distribution
               </Typography>
+              {Object.keys(analytics.orderStatusDistribution).length === 0 ? (
+                <Box sx={{ py: 4, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No orders yet
+                  </Typography>
+                </Box>
+              ) : (
               <Box sx={{ mt: 2 }}>
                 {Object.entries(analytics.orderStatusDistribution).map(([status, count]) => (
                   <Box key={status} sx={{ mb: 2 }}>
@@ -344,14 +404,15 @@ function ReportsAnalytics() {
                   </Box>
                 ))}
               </Box>
+              )}
             </Paper>
           </Grid>
 
           {/* Recent Orders */}
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Recent Orders
+            <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'primary.main' }}>
+                🛒 Recent Orders
               </Typography>
               <TableContainer>
                 <Table size="small">
@@ -366,9 +427,9 @@ function ReportsAnalytics() {
                   <TableBody>
                     {analytics.recentOrders.map((order) => (
                       <TableRow key={order.id}>
-                        <TableCell>#{order.order_number}</TableCell>
-                        <TableCell>{order.customer_name}</TableCell>
-                        <TableCell>Rs. {order.total_amount}</TableCell>
+                        <TableCell>#{order.id}</TableCell>
+                        <TableCell>{order.user?.name || 'N/A'}</TableCell>
+                        <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
                         <TableCell>
                           <Chip
                             label={order.status}
@@ -378,6 +439,15 @@ function ReportsAnalytics() {
                         </TableCell>
                       </TableRow>
                     ))}
+                    {analytics.recentOrders.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={4} align="center">
+                          <Typography variant="body2" color="text.secondary">
+                            No orders yet
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -386,9 +456,9 @@ function ReportsAnalytics() {
 
           {/* Monthly Revenue */}
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Monthly Revenue Trend
+            <Paper sx={{ p: 3, borderRadius: 2, boxShadow: 3 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: 'primary.main' }}>
+                📈 Monthly Revenue Trend
               </Typography>
               <TableContainer>
                 <Table size="small">
@@ -403,7 +473,7 @@ function ReportsAnalytics() {
                     {analytics.monthlyRevenue.map((month, index) => (
                       <TableRow key={month.month}>
                         <TableCell>{month.month}</TableCell>
-                        <TableCell>Rs. {month.revenue.toLocaleString()}</TableCell>
+                        <TableCell>{formatCurrency(month.revenue)}</TableCell>
                         <TableCell>
                           <Box display="flex" alignItems="center">
                             {index > 0 && month.revenue > analytics.monthlyRevenue[index - 1].revenue ? (
@@ -429,6 +499,15 @@ function ReportsAnalytics() {
                         </TableCell>
                       </TableRow>
                     ))}
+                    {analytics.monthlyRevenue.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={3} align="center">
+                          <Typography variant="body2" color="text.secondary">
+                            No revenue data available
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>

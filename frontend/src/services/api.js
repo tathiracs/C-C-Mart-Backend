@@ -80,6 +80,7 @@ export const categoriesAPI = {
 // Orders API
 export const ordersAPI = {
   getOrders: (params) => api.get('/orders', { params }),
+  getAllOrders: () => api.get('/orders/all'), // Admin only - get all orders
   getOrder: (id) => api.get(`/orders/${id}`),
   createOrder: (orderData) => api.post('/orders', orderData),
   updateOrderStatus: (id, statusData) => api.put(`/orders/${id}/status`, statusData),

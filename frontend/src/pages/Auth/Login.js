@@ -29,6 +29,8 @@ function Login() {
   const [error, setError] = useState('');
 
   const from = location.state?.from?.pathname || '/';
+  const registrationMessage = location.state?.message;
+  const registrationEmail = location.state?.email;
 
   const {
     register,
@@ -36,14 +38,21 @@ function Login() {
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
+    defaultValues: {
+      email: registrationEmail || '',
+      password: '',
+    },
   });
 
   const onSubmit = async (data) => {
     setError('');
     const result = await login(data);
-    
+
     if (result.success) {
-      navigate(from, { replace: true });
+      const target = result.user?.role?.toLowerCase() === 'admin' && !location.state?.from
+        ? '/admin'
+        : from;
+      navigate(target, { replace: true });
     } else {
       setError(result.message);
     }
@@ -63,6 +72,12 @@ function Login() {
           <Typography component="h1" variant="h4" align="center" gutterBottom>
             Sign In
           </Typography>
+          
+          {registrationMessage && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {registrationMessage}
+            </Alert>
+          )}
           
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>

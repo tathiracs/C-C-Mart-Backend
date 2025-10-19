@@ -72,8 +72,8 @@ export function AuthProvider({ children }) {
   // Load user data
   const loadUser = async () => {
     try {
-      const res = await authAPI.getMe();
-      dispatch({ type: 'LOAD_USER', payload: res.data.user });
+  const res = await authAPI.getMe();
+  dispatch({ type: 'LOAD_USER', payload: res.data });
     } catch (error) {
       dispatch({ type: 'AUTH_ERROR' });
     }
@@ -86,10 +86,11 @@ export function AuthProvider({ children }) {
       const res = await authAPI.login(credentials);
       dispatch({ type: 'LOGIN_SUCCESS', payload: res.data });
       toast.success('Login successful!');
-      return { success: true };
+      return { success: true, user: res.data.user };
     } catch (error) {
       dispatch({ type: 'AUTH_ERROR' });
-      const message = error.response?.data?.message || 'Login failed';
+  const errorPayload = error.response?.data;
+  const message = typeof errorPayload === 'string' ? errorPayload : errorPayload?.message || 'Login failed';
       toast.error(message);
       return { success: false, message };
     }
@@ -100,12 +101,14 @@ export function AuthProvider({ children }) {
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       const res = await authAPI.register(userData);
-      dispatch({ type: 'LOGIN_SUCCESS', payload: res.data });
-      toast.success('Registration successful!');
-      return { success: true };
+      // Don't auto-login after registration
+      dispatch({ type: 'SET_LOADING', payload: false });
+      toast.success('Registration successful! Please log in.');
+      return { success: true, user: res.data.user };
     } catch (error) {
       dispatch({ type: 'AUTH_ERROR' });
-      const message = error.response?.data?.message || 'Registration failed';
+      const errorPayload = error.response?.data;
+      const message = typeof errorPayload === 'string' ? errorPayload : errorPayload?.message || 'Registration failed';
       toast.error(message);
       return { success: false, message };
     }

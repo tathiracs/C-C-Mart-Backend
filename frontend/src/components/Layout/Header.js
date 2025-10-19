@@ -22,7 +22,6 @@ import {
 
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
-import ProductSearch from '../Search/ProductSearch';
 
 
 function Header() {
@@ -72,7 +71,7 @@ function Header() {
       <MenuItem onClick={() => { navigate('/orders'); handleMenuClose(); }}>
         My Orders
       </MenuItem>
-      {user?.role === 'admin' && (
+  {user?.role?.toLowerCase() === 'admin' && (
         <MenuItem onClick={() => { navigate('/admin'); handleMenuClose(); }}>
           Admin Dashboard
         </MenuItem>
@@ -82,7 +81,7 @@ function Header() {
   );
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{ bgcolor: '#2e7d32' }}>
       <Container maxWidth="lg">
         <Toolbar>
           {/* Logo */}
@@ -139,11 +138,6 @@ function Header() {
             </Button>
           </Box>
 
-          {/* Search Box */}
-          <Box sx={{ mr: 2, minWidth: 300 }}>
-            <ProductSearch />
-          </Box>
-
           {/* Cart Icon */}
           <IconButton
             component={RouterLink}
@@ -152,7 +146,12 @@ function Header() {
             color="inherit"
             sx={{ mr: 2 }}
           >
-            <Badge badgeContent={itemCount} color="secondary">
+            <Badge 
+              badgeContent={isAuthenticated ? itemCount : 0} 
+              color="secondary"
+              invisible={!isAuthenticated || itemCount === 0}
+              max={99}
+            >
               <ShoppingCart />
             </Badge>
           </IconButton>

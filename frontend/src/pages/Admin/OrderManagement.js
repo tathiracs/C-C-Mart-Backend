@@ -62,10 +62,32 @@ function OrderManagement() {
   const fetchOrders = async () => {
     try {
       setLoading(true);
-      const response = await ordersAPI.getOrders();
-      setOrders(response.data.data || []);
+      console.log('🔄 [UPDATED CODE v3.0] Admin fetching ALL orders from all users...');
+      console.log('🔍 Making request to: /api/orders/all');
+      const response = await ordersAPI.getAllOrders();
+      console.log('✅ Response received:', response);
+      console.log('📦 Response.data type:', typeof response.data, Array.isArray(response.data) ? '(Array)' : '(Not Array)');
+      console.log('📦 Response.data:', response.data);
+      console.log('📦 Response.data length:', response.data?.length);
+      
+      // Backend returns orders directly in response.data (array)
+      const ordersList = Array.isArray(response.data) ? response.data : [];
+      console.log('✅ Processed orders list:', ordersList);
+      console.log('✅ Number of orders to display:', ordersList.length);
+      
+      if (ordersList.length === 0) {
+        console.warn('⚠️ WARNING: No orders in the list! Check backend response.');
+      } else {
+        console.log('✅ First order sample:', ordersList[0]);
+      }
+      
+      setOrders(ordersList);
+      setError('');
     } catch (error) {
-      console.error('Error fetching orders:', error);
+      console.error('❌ [ERROR] Failed to fetch orders:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Error response:', error.response);
+      console.error('❌ Error response data:', error.response?.data);
       setError('Failed to load orders');
     } finally {
       setLoading(false);
@@ -74,7 +96,7 @@ function OrderManagement() {
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
-      await ordersAPI.updateOrder(orderId, { status: newStatus });
+      await ordersAPI.updateOrderStatus(orderId, { status: newStatus });
       toast.success('Order status updated successfully!');
       fetchOrders();
     } catch (error) {
@@ -103,16 +125,16 @@ function OrderManagement() {
     return statusObj ? statusObj.label : status;
   };
 
-  const filteredOrders = orders.filter(order => 
+  const filteredOrders = Array.isArray(orders) ? orders.filter(order => 
     !statusFilter || order.status === statusFilter
-  );
+  ) : [];
 
   const getTotalRevenue = () => {
-    return orders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
+    return Array.isArray(orders) ? orders.reduce((sum, order) => sum + parseFloat(order.totalAmount || 0), 0) : 0;
   };
 
   const getOrdersByStatus = (status) => {
-    return orders.filter(order => order.status === status).length;
+    return Array.isArray(orders) ? orders.filter(order => order.status === status).length : 0;
   };
 
   if (loading) {
@@ -242,71 +264,84 @@ function OrderManagement() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredOrders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell>
-                    <Typography variant="subtitle2" fontWeight="bold">
-                      #{order.order_number}
+              {filteredOrders.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    <Typography variant="body1" color="text.secondary" sx={{ py: 4 }}>
+                      {statusFilter ? 'No orders found with this status' : 'No orders found'}
                     </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Box>
-                      <Typography variant="subtitle2">
-                        {order.customer_name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {order.customer_email}
-                      </Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {order.items_count || 0} items
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="subtitle2" fontWeight="bold">
-                      Rs. {order.total_amount}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={getStatusLabel(order.status)}
-                      color={getStatusColor(order.status)}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body2">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Tooltip title="View Details">
-                      <IconButton
-                        size="small"
-                        onClick={() => handleViewOrder(order)}
-                        color="primary"
-                      >
-                        <Visibility />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Update Status">
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          const currentIndex = orderStatuses.findIndex(s => s.value === order.status);
-                          const nextStatus = orderStatuses[currentIndex + 1]?.value || 'pending';
-                          handleStatusChange(order.id, nextStatus);
-                        }}
-                        color="success"
-                      >
-                        <CheckCircle />
-                      </IconButton>
-                    </Tooltip>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredOrders.map((order) => (
+                  <TableRow key={order.id}>
+                    <TableCell>
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        #{order.orderNumber || order.id}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Box>
+                        <Typography variant="subtitle2">
+                          {order.user?.name || 'N/A'}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {order.user?.email || 'N/A'}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {order.items?.length || 0} items
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="subtitle2" fontWeight="bold">
+                        Rs. {parseFloat(order.totalAmount || 0).toFixed(2)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={getStatusLabel(order.status)}
+                        color={getStatusColor(order.status)}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(order.createdAt).toLocaleTimeString()}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title="View Details">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleViewOrder(order)}
+                          color="primary"
+                        >
+                          <Visibility />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Update Status">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            const currentIndex = orderStatuses.findIndex(s => s.value === order.status);
+                            const nextStatus = orderStatuses[currentIndex + 1]?.value || 'pending';
+                            handleStatusChange(order.id, nextStatus);
+                          }}
+                          color="success"
+                        >
+                          <CheckCircle />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
