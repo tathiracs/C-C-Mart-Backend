@@ -85,6 +85,17 @@ function Checkout() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    
+    // Only allow numbers for postal code
+    if (name === 'postalCode') {
+      const numericValue = value.replace(/\D/g, '');
+      setFormData(prev => ({
+        ...prev,
+        [name]: numericValue,
+      }));
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value,
@@ -253,6 +264,11 @@ function Checkout() {
                     name="postalCode"
                     value={formData.postalCode}
                     onChange={handleInputChange}
+                    inputProps={{
+                      inputMode: 'numeric',
+                      pattern: '[0-9]*',
+                    }}
+                    helperText="Numbers only"
                   />
                 </Grid>
               </Grid>
