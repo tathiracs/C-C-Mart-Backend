@@ -241,21 +241,6 @@ function Contact() {
                 Come visit us for the full C&C Mart experience!
               </Typography>
               
-              {/* Map Image */}
-              <Box
-                component="img"
-                src="https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=600"
-                alt="Store Location"
-                sx={{
-                  width: '100%',
-                  height: '280px',
-                  objectFit: 'cover',
-                  borderRadius: 2,
-                  mb: 3,
-                  boxShadow: 3,
-                }}
-              />
-              
               <Box sx={{ bgcolor: 'primary.main', color: 'white', p: 3, borderRadius: 2 }}>
                 <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
                   <LocationOn sx={{ verticalAlign: 'middle', mr: 1 }} />
