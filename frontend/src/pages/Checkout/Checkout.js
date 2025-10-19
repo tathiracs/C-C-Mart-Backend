@@ -34,6 +34,7 @@ import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { ordersAPI } from '../../services/api';
 import { toast } from 'react-toastify';
+import { TOAST_IDS } from '../../constants/toastIds';
 
 function Checkout() {
   const navigate = useNavigate();
@@ -126,8 +127,10 @@ function Checkout() {
       const response = await ordersAPI.createOrder(orderData);
       console.log('✅ Order created successfully:', response.data);
       
-      toast.success('🎉 Order placed successfully! Thank you for shopping with us.');
-      clearCart();
+      toast.success('🎉 Order placed successfully! Thank you for shopping with us.', {
+        toastId: TOAST_IDS.ORDER_SUCCESS,
+      });
+      clearCart({ showToast: false });
       
       // Navigate to orders page with success message
       navigate('/orders', { 

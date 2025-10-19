@@ -27,6 +27,7 @@ import {
 } from '@mui/icons-material';
 import { ordersAPI } from '../../services/api';
 import { toast } from 'react-toastify';
+import { TOAST_IDS } from '../../constants/toastIds';
 
 function Orders() {
   const navigate = useNavigate();
@@ -40,7 +41,9 @@ function Orders() {
     
     // Show success message if coming from checkout
     if (location.state?.newOrder) {
-      toast.success('🎉 Order placed successfully!');
+      toast.success('🎉 Order placed successfully!', {
+        toastId: TOAST_IDS.ORDER_SUCCESS,
+      });
       // Clear the state
       window.history.replaceState({}, document.title);
     }

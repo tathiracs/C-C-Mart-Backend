@@ -181,9 +181,11 @@ export function CartProvider({ children }) {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
   };
 
-  const clearCart = () => {
+  const clearCart = (options = {}) => {
     dispatch({ type: 'CLEAR_CART' });
-    toast.success('Cart cleared');
+    if (options.showToast !== false) {
+      toast.success('Cart cleared');
+    }
   };
 
   const getItemQuantity = (productId) => {
@@ -196,7 +198,7 @@ export function CartProvider({ children }) {
     addToCart,
     removeFromCart,
     updateQuantity,
-    clearCart,
+  clearCart,
     getItemQuantity,
   };
 
