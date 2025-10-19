@@ -400,13 +400,11 @@ function Home() {
                             objectFit: 'contain',
                             backgroundColor: '#f8f8f8',
                             padding: 2,
-                            cursor: 'pointer',
                             transition: 'transform 0.3s ease',
                             '&:hover': {
                               transform: 'scale(1.05)',
                             },
                           }}
-                          onClick={() => navigate(`/products/${product.id}`)}
                         />
                         {product.isFeatured && (
                           <Chip 
@@ -430,14 +428,11 @@ function Home() {
                           variant="h6" 
                           component="h3"
                           sx={{ 
-                            cursor: 'pointer',
                             fontSize: '1rem',
                             fontWeight: 600,
                             mb: 1,
-                            '&:hover': { color: 'primary.main' },
                             transition: 'color 0.2s ease',
                           }}
-                          onClick={() => navigate(`/products/${product.id}`)}
                         >
                           {product.name}
                         </Typography>
