@@ -27,7 +27,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 echo [INFO] Starting Backend Server (Spring Boot)...
 echo.
-start "C&C Mart Backend" cmd /k "cd /d %~dp0backend && java -jar target\backend-spring-0.0.1-SNAPSHOT.jar"
+start "C&C Mart Backend" cmd /k "cd /d %~dp0backend && set DB_PASSWORD= && java -jar target\backend-spring-0.0.1-SNAPSHOT.jar"
 
 timeout /t 5 /nobreak >nul
 
