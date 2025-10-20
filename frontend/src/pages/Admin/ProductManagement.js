@@ -81,7 +81,10 @@ function ProductManagement() {
         ? response.data 
         : response.data?.data || [];
       console.log('Product list count:', productList.length);
-      setProducts(productList);
+      // Filter out deleted products (isActive = false)
+      const activeProducts = productList.filter(p => p.isActive !== false);
+      console.log('Active products count:', activeProducts.length);
+      setProducts(activeProducts);
       setError('');
     } catch (error) {
       console.error('Error fetching products:', error);
