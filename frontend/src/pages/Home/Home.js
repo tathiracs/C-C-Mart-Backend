@@ -75,22 +75,70 @@ function Home() {
 
   const features = [
     {
-      icon: <EnergySavingsLeaf />,
+      icon: (
+        <Box
+          component="img"
+          src="/quality-service.jpg"
+          alt="Quality Service"
+          sx={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '50%',
+          }}
+        />
+      ),
       title: 'Quality Service',
       description: 'Providing excellent service and support to our customers',
     },
     {
-      icon: <LocalShipping />,
+      icon: (
+        <Box
+          component="img"
+          src="/fast-delivery.jpg"
+          alt="Fast Delivery"
+          sx={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '50%',
+          }}
+        />
+      ),
       title: 'Fast Delivery',
       description: 'Quick and reliable delivery services in Kurunegala',
     },
     {
-      icon: <Schedule />,
+      icon: (
+        <Box
+          component="img"
+          src="/convenient-hours.jpg"
+          alt="Convenient Hours"
+          sx={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '50%',
+          }}
+        />
+      ),
       title: 'Convenient Hours',
       description: 'Flexible service hours to accommodate your schedule',
     },
     {
-      icon: <Support />,
+      icon: (
+        <Box
+          component="img"
+          src="/customer-support.jpg"
+          alt="Customer Support"
+          sx={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '50%',
+          }}
+        />
+      ),
       title: 'Customer Support',
       description: '24/7 customer support for all your needs',
     },
@@ -98,10 +146,13 @@ function Home() {
 
   return (
     <>
-      {/* Enhanced Hero Section with Gradient */}
+      {/* Enhanced Hero Section with Background Image */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+          background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.6) 0%, rgba(27, 94, 32, 0.7) 100%), url("/hero-background.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
           color: 'white',
           py: 10,
           mb: 6,
@@ -114,7 +165,7 @@ function Home() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+            background: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.02) 0%, transparent 20%)',
             pointerEvents: 'none',
           },
         }}
@@ -148,7 +199,7 @@ function Home() {
                   sx={{
                     fontWeight: 800,
                     fontSize: { xs: '2.5rem', md: '3.5rem' },
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
+                    textShadow: '3px 3px 8px rgba(0,0,0,0.8), 1px 1px 3px rgba(0,0,0,0.9)',
                   }}
                 >
                   Welcome to C&C Mart
@@ -160,6 +211,7 @@ function Home() {
                     opacity: 0.95,
                     fontWeight: 400,
                     lineHeight: 1.6,
+                    textShadow: '2px 2px 6px rgba(0,0,0,0.7), 1px 1px 3px rgba(0,0,0,0.8)',
                   }}
                 >
                   Your trusted neighborhood grocery store offering quality products,
@@ -229,14 +281,30 @@ function Home() {
                 }}
               >
                 <Box
+                  component="img"
+                  src="/logo.svg"
+                  alt="C&C Mart Logo"
                   sx={{
-                    fontSize: '15rem',
-                    opacity: 0.9,
-                    filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))',
+                    width: '350px',
+                    height: '350px',
+                    objectFit: 'cover',
+                    borderRadius: '50%',
+                    opacity: 0.95,
+                    filter: 'drop-shadow(0 10px 40px rgba(0,0,0,0.3))',
+                    backgroundColor: 'white',
+                    padding: '20px',
                   }}
-                >
-                  🏪
-                </Box>
+                  onError={(e) => {
+                    // Fallback to emoji if logo not found
+                    e.target.style.display = 'none';
+                    const emojiBox = document.createElement('div');
+                    emojiBox.style.fontSize = '15rem';
+                    emojiBox.style.opacity = '0.9';
+                    emojiBox.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))';
+                    emojiBox.textContent = '🏪';
+                    e.target.parentElement.appendChild(emojiBox);
+                  }}
+                />
               </Box>
             </Grid>
           </Grid>
@@ -280,47 +348,74 @@ function Home() {
                   p: 3,
                   textAlign: 'center',
                   height: '100%',
+                  minHeight: '280px',
                   border: '2px solid',
                   borderColor: 'transparent',
                   borderRadius: 3,
-                  bgcolor: 'primary.main',
+                  position: 'relative',
+                  overflow: 'hidden',
                   color: 'white',
                   transition: 'all 0.3s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundImage: feature.icon.props.src ? `url(${feature.icon.props.src})` : 'none',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    zIndex: 0,
+                  },
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.5) 0%, rgba(27, 94, 32, 0.6) 100%)',
+                    zIndex: 1,
+                  },
                   '&:hover': {
                     transform: 'translateY(-8px) scale(1.02)',
-                    boxShadow: '0 12px 24px rgba(46, 125, 50, 0.3)',
+                    boxShadow: '0 12px 24px rgba(46, 125, 50, 0.4)',
                     borderColor: 'primary.dark',
+                    '&::after': {
+                      background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.4) 0%, rgba(27, 94, 32, 0.5) 100%)',
+                    },
                   },
                 }}
               >
-                <Box 
-                  sx={{ 
-                    mb: 2,
-                    display: 'inline-flex',
-                    p: 2,
-                    borderRadius: '50%',
-                    bgcolor: 'rgba(255,255,255,0.2)',
-                    backdropFilter: 'blur(10px)',
-                  }}
-                >
-                  {React.cloneElement(feature.icon, { 
-                    fontSize: 'large',
-                    sx: { fontSize: '2.5rem' }
-                  })}
+                <Box sx={{ flex: 1 }} />
+                <Box sx={{ position: 'relative', zIndex: 2 }}>
+                  <Typography 
+                    variant="h6" 
+                    gutterBottom
+                    sx={{ 
+                      fontWeight: 700, 
+                      mb: 1,
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    {feature.title}
+                  </Typography>
+                  <Typography 
+                    variant="body2"
+                    sx={{ 
+                      opacity: 0.95, 
+                      lineHeight: 1.6,
+                      textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    {feature.description}
+                  </Typography>
                 </Box>
-                <Typography 
-                  variant="h6" 
-                  gutterBottom
-                  sx={{ fontWeight: 700, mb: 1 }}
-                >
-                  {feature.title}
-                </Typography>
-                <Typography 
-                  variant="body2"
-                  sx={{ opacity: 0.95, lineHeight: 1.6 }}
-                >
-                  {feature.description}
-                </Typography>
               </Paper>
             </Grid>
           ))}
@@ -511,12 +606,36 @@ function Home() {
         {/* Stats Section - Eye-catching */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+            position: 'relative',
             borderRadius: 4,
             p: 6,
             mb: 10,
             color: 'white',
             boxShadow: '0 10px 40px rgba(46, 125, 50, 0.3)',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundImage: 'url("/stats-background.jpg")',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              zIndex: 0,
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.85) 0%, rgba(27, 94, 32, 0.9) 100%)',
+              zIndex: 1,
+            },
           }}
         >
           <Typography 
@@ -526,12 +645,14 @@ function Home() {
             sx={{ 
               fontWeight: 700,
               mb: 5,
-              textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
+              textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
+              position: 'relative',
+              zIndex: 2,
             }}
           >
             📊 Our Success Story
           </Typography>
-          <Grid container spacing={4} textAlign="center">
+          <Grid container spacing={4} textAlign="center" sx={{ position: 'relative', zIndex: 2 }}>
             <Grid item xs={6} md={3}>
               <Box
                 sx={{
@@ -753,9 +874,33 @@ function Home() {
             py: 8,
             px: 4,
             borderRadius: 4,
-            background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.1) 0%, rgba(27, 94, 32, 0.1) 100%)',
             border: '2px solid',
             borderColor: 'primary.light',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundImage: 'url("/cta-background.jpg")',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              zIndex: 0,
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.75) 0%, rgba(27, 94, 32, 0.85) 100%)',
+              zIndex: 1,
+            },
           }}
         >
           <Typography 
@@ -763,8 +908,11 @@ function Home() {
             gutterBottom
             sx={{ 
               fontWeight: 700,
-              color: 'primary.main',
+              color: 'white',
               mb: 2,
+              position: 'relative',
+              zIndex: 2,
+              textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
             }}
           >
             Ready to Experience C&C Mart? 🚀
@@ -773,15 +921,19 @@ function Home() {
             variant="h6" 
             sx={{ 
               mb: 4,
-              color: 'text.secondary',
+              color: 'white',
+              opacity: 0.95,
               maxWidth: '700px',
               mx: 'auto',
+              position: 'relative',
+              zIndex: 2,
+              textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
             }}
           >
             Join our community today and discover quality products, exceptional service, 
             and unbeatable convenience!
           </Typography>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap', position: 'relative', zIndex: 2 }}>
             <Button
               variant="contained"
               size="large"

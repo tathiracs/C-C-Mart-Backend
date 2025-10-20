@@ -44,12 +44,7 @@ function About() {
     {
       icon: <Star sx={{ fontSize: 40 }} />,
       value: '4.8/5',
-      label: 'Customer Rating',
-    },
-    {
-      icon: <LocalShipping sx={{ fontSize: 40 }} />,
-      value: '500+',
-      label: 'Deliveries Per Month',
+      label: 'Customer Reviews',
     },
   ];
 
@@ -108,7 +103,6 @@ function About() {
       {/* Hero Banner */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
           color: 'white',
           py: 6,
           mb: 4,
@@ -121,12 +115,25 @@ function About() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-            pointerEvents: 'none',
+            backgroundImage: 'url("/about-hero-background.jpg")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            zIndex: 0,
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.85) 0%, rgba(27, 94, 32, 0.9) 100%)',
+            zIndex: 1,
           },
         }}
       >
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
           <Box sx={{ textAlign: 'center' }}>
             <Typography 
               variant="h2" 
@@ -135,7 +142,7 @@ function About() {
               sx={{ 
                 fontWeight: 800,
                 fontSize: { xs: '2.5rem', md: '3.5rem' },
-                textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
+                textShadow: '2px 2px 4px rgba(0,0,0,0.3)',
                 mb: 2,
               }}
             >
@@ -148,6 +155,7 @@ function About() {
                 maxWidth: '700px',
                 mx: 'auto',
                 fontWeight: 400,
+                textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
               }}
             >
               Your Trusted Neighborhood Grocery Store Since 2009
@@ -179,33 +187,67 @@ function About() {
 
         {/* Statistics Section */}
         <Box sx={{ mb: 10 }}>
-          <Grid container spacing={4}>
+          <Grid container spacing={4} justifyContent="center">
             {stats.map((stat, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
+              <Grid item xs={12} sm={6} md={4} key={index}>
                 <Card
                   elevation={0}
                   sx={{
                     textAlign: 'center',
                     p: 4,
                     height: '100%',
-                    bgcolor: 'primary.main',
+                    minHeight: '250px',
                     color: 'white',
+                    position: 'relative',
+                    overflow: 'hidden',
                     transition: 'all 0.3s',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundImage: `url("/about-stat-${index + 1}.jpg")`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      backgroundRepeat: 'no-repeat',
+                      zIndex: 0,
+                    },
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.85) 0%, rgba(27, 94, 32, 0.9) 100%)',
+                      zIndex: 1,
+                    },
                     '&:hover': {
                       transform: 'translateY(-8px)',
                       boxShadow: 6,
+                      '&::after': {
+                        background: 'linear-gradient(135deg, rgba(46, 125, 50, 0.75) 0%, rgba(27, 94, 32, 0.85) 100%)',
+                      },
                     },
                   }}
                 >
-                  <Box sx={{ mb: 2, opacity: 0.9 }}>
-                    {stat.icon}
+                  <Box sx={{ flex: 1 }} />
+                  <Box sx={{ position: 'relative', zIndex: 2 }}>
+                    <Box sx={{ mb: 2, opacity: 0.9 }}>
+                      {stat.icon}
+                    </Box>
+                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1, textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
+                      {stat.value}
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.9, textShadow: '1px 1px 2px rgba(0,0,0,0.3)' }}>
+                      {stat.label}
+                    </Typography>
                   </Box>
-                  <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
-                    {stat.value}
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    {stat.label}
-                  </Typography>
                 </Card>
               </Grid>
             ))}

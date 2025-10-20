@@ -78,17 +78,6 @@ function DeliveryInfo() {
         <Grid container spacing={4} sx={{ mb: 8 }}>
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ textAlign: 'center', p: 3 }}>
-              <LocalShipping color="primary" sx={{ fontSize: 48, mb: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Free Delivery
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Free delivery on orders above Rs. 2,500
-              </Typography>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ textAlign: 'center', p: 3 }}>
               <Schedule color="primary" sx={{ fontSize: 48, mb: 2 }} />
               <Typography variant="h6" gutterBottom>
                 Same Day Delivery

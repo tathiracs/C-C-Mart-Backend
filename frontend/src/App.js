@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Box } from '@mui/material';
 
@@ -6,6 +6,7 @@ import Layout from './components/Layout/Layout';
 import AdminLayout from './layouts/AdminLayout';
 import PrivateRoute from './components/Auth/PrivateRoute';
 import AdminRoute from './components/Auth/AdminRoute';
+import LoadingScreen from './components/Layout/LoadingScreen';
 
 // Public Pages
 import Home from './pages/Home/Home';
@@ -38,8 +39,24 @@ import ReportsAnalytics from './pages/Admin/ReportsAnalytics';
 import AdminDeliveryAgents from './pages/Admin/AdminDeliveryAgents';
 import TestAPI from './pages/Test/TestAPI';
 import TestOrdersAPI from './pages/Test/TestOrdersAPI';
+import DiagnosticPage from './pages/Test/DiagnosticPage';
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate initial app loading
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000); // Show loading screen for 2 seconds
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Routes>
@@ -87,6 +104,11 @@ function App() {
               <OrderDetails />
             </PrivateRoute>
           } />
+          
+          {/* Test & Diagnostic Routes */}
+          <Route path="diagnostic" element={<DiagnosticPage />} />
+          <Route path="test" element={<TestAPI />} />
+          <Route path="test-orders" element={<TestOrdersAPI />} />
           
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

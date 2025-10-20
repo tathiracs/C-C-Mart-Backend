@@ -9,7 +9,6 @@ import {
   Button,
   Paper,
   Divider,
-  Chip,
   List,
   ListItem,
   ListItemIcon,
@@ -77,8 +76,8 @@ function Contact() {
     {
       icon: <LocalShipping sx={{ fontSize: 48 }} color="primary" />,
       title: 'Home Delivery',
-      description: 'Free delivery within Kurunegala for orders above Rs. 2,500. Fast and reliable service to your doorstep.',
-      features: ['Same-day delivery', 'Free above Rs.2,500', 'Track your order'],
+      description: 'Fast and reliable delivery service to your doorstep. Quality products delivered fresh.',
+      features: ['Same-day delivery', 'Multiple delivery zones', 'Track your order'],
     },
     {
       icon: <WhatsApp sx={{ fontSize: 48 }} color="primary" />,

@@ -5,27 +5,23 @@ import {
   Typography,
   Box,
   Grid,
-  Card,
-  CardMedia,
-  CardContent,
-  CardActions,
-  Button,
   TextField,
   InputAdornment,
-  CircularProgress,
   Alert,
-  Chip,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  Chip,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import FilterListIcon from '@mui/icons-material/FilterList';
 import { productsAPI, categoriesAPI } from '../../services/api';
 import { useCart } from '../../contexts/CartContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import EnhancedProductCard from '../../components/Products/EnhancedProductCard';
+import { ProductGridSkeleton } from '../../components/Products/ProductCardSkeleton';
 
 function Products() {
   const navigate = useNavigate();
@@ -104,24 +100,17 @@ function Products() {
     return matchesSearch && matchesCategory;
   });
 
-  if (loading) {
-    return (
-      <Container maxWidth="lg">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
-
   return (
-    <Box sx={{ bgcolor: 'grey.50', minHeight: '100vh' }}>
+    <Box sx={{ bgcolor: '#f8f9fa', minHeight: '100vh' }}>
       {/* Hero Banner */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+          background: 'linear-gradient(135deg, rgba(45, 122, 62, 0.75) 0%, rgba(27, 94, 32, 0.85) 100%), url("/products-banner.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
           color: 'white',
-          py: 6,
+          py: 8,
           mb: 4,
           position: 'relative',
           overflow: 'hidden',
@@ -132,7 +121,7 @@ function Products() {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+            background: 'radial-gradient(circle at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%)',
             pointerEvents: 'none',
           },
         }}
@@ -146,11 +135,11 @@ function Products() {
               sx={{ 
                 fontWeight: 800,
                 fontSize: { xs: '2.5rem', md: '3.5rem' },
-                textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
+                textShadow: '3px 3px 8px rgba(0,0,0,0.8), 1px 1px 3px rgba(0,0,0,0.9)',
                 mb: 2,
               }}
             >
-              🛒 Our Products
+              Shop Fresh Groceries
             </Typography>
             <Typography 
               variant="h6" 
@@ -159,9 +148,10 @@ function Products() {
                 maxWidth: '700px',
                 mx: 'auto',
                 fontWeight: 400,
+                textShadow: '2px 2px 6px rgba(0,0,0,0.7), 1px 1px 3px rgba(0,0,0,0.8)',
               }}
             >
-              Discover fresh groceries, quality products, and amazing deals
+              Quality products at your fingertips. Browse our selection!
             </Typography>
           </Box>
         </Container>
@@ -265,8 +255,10 @@ function Products() {
           )}
         </Box>
 
-        {/* Products Grid */}
-        {filteredProducts.length === 0 ? (
+        {/* Products Grid with Loading State */}
+        {loading ? (
+          <ProductGridSkeleton count={8} />
+        ) : filteredProducts.length === 0 ? (
           <Box 
             textAlign="center" 
             py={10}
@@ -288,16 +280,32 @@ function Products() {
                 : 'Check back soon for new arrivals!'}
             </Typography>
             {(searchQuery || selectedCategory) && (
-              <Button
+              <Box
                 variant="contained"
                 onClick={() => {
                   setSearchQuery('');
                   setSelectedCategory('');
                 }}
-                sx={{ borderRadius: 2 }}
+                sx={{ 
+                  display: 'inline-block',
+                  borderRadius: 2,
+                  cursor: 'pointer',
+                }}
               >
-                Clear Filters
-              </Button>
+                <Chip
+                  label="Clear All Filters"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategory('');
+                  }}
+                  onDelete={() => {
+                    setSearchQuery('');
+                    setSelectedCategory('');
+                  }}
+                  color="primary"
+                  sx={{ fontWeight: 600, px: 2, py: 3 }}
+                />
+              </Box>
             )}
           </Box>
         ) : (
@@ -323,6 +331,7 @@ function Products() {
                 ✨ Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
               </Typography>
               <Chip
+                icon={<FilterListIcon />}
                 label={`${filteredProducts.length} items`}
                 color="primary"
                 sx={{ fontWeight: 600 }}
@@ -349,167 +358,13 @@ function Products() {
                     },
                   }}
                 >
-                  <Card 
-                    sx={{ 
-                      height: '100%', 
-                      display: 'flex', 
-                      flexDirection: 'column',
-                      borderRadius: 3,
-                      overflow: 'hidden',
-                      border: '1px solid',
-                      borderColor: 'grey.200',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        transform: 'translateY(-8px)',
-                        boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
-                        borderColor: 'primary.main',
-                      },
-                    }}
-                  >
-                    {/* Product Image with Overlay */}
-                    <Box sx={{ position: 'relative' }}>
-                      <CardMedia
-                        component="img"
-                        height="240"
-                        image={product.imageUrl && product.imageUrl.trim() !== '' 
-                          ? product.imageUrl 
-                          : 'https://placehold.co/300x240/e0e0e0/666666?text=No+Image'}
-                        alt={product.name}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = 'https://placehold.co/300x240/e0e0e0/666666?text=No+Image';
-                        }}
-                        sx={{ 
-                          objectFit: 'contain',
-                          backgroundColor: '#f8f8f8',
-                          padding: 2,
-                        }}
-                      />
-                      
-                      {/* Stock Badge */}
-                      {product.stockQuantity !== undefined && product.stockQuantity <= 5 && product.stockQuantity > 0 && (
-                        <Chip
-                          label={`Only ${product.stockQuantity} left!`}
-                          size="small"
-                          sx={{
-                            position: 'absolute',
-                            top: 12,
-                            left: 12,
-                            bgcolor: 'warning.main',
-                            color: 'white',
-                            fontWeight: 'bold',
-                            boxShadow: 2,
-                          }}
-                        />
-                      )}
-                      
-                      {product.stockQuantity === 0 && (
-                        <Chip
-                          label="Out of Stock"
-                          size="small"
-                          sx={{
-                            position: 'absolute',
-                            top: 12,
-                            left: 12,
-                            bgcolor: 'error.main',
-                            color: 'white',
-                            fontWeight: 'bold',
-                            boxShadow: 2,
-                          }}
-                        />
-                      )}
-                    </Box>
-
-                    <CardContent sx={{ flexGrow: 1, pb: 1 }}>
-                      {/* Category Badge */}
-                      {product.category && (
-                        <Chip 
-                          label={product.category.name} 
-                          size="small"
-                          sx={{
-                            mb: 1.5,
-                            bgcolor: 'primary.light',
-                            color: 'primary.dark',
-                            fontWeight: 600,
-                          }}
-                        />
-                      )}
-                      
-                      {/* Product Name */}
-                      <Typography 
-                        gutterBottom 
-                        variant="h6" 
-                        component="h2"
-                        sx={{
-                          fontSize: '1rem',
-                          fontWeight: 600,
-                          mb: 1,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {product.name}
-                      </Typography>
-                      
-                      {/* Description */}
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary" 
-                        sx={{ 
-                          mb: 2,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        {product.description || 'Quality product at great value'}
-                      </Typography>
-                      
-                      {/* Price */}
-                      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
-                        <Typography 
-                          variant="h5" 
-                          color="primary" 
-                          sx={{ fontWeight: 700 }}
-                        >
-                          Rs. {parseFloat(product.price).toFixed(2)}
-                        </Typography>
-                        {product.unit && (
-                          <Typography variant="caption" color="text.secondary">
-                            / {product.unit}
-                          </Typography>
-                        )}
-                      </Box>
-                    </CardContent>
-
-                    {/* Action Button */}
-                    <CardActions sx={{ p: 2, pt: 0 }}>
-                      <Button 
-                        variant="contained"
-                        startIcon={<ShoppingCartIcon />}
-                        onClick={() => handleAddToCart(product)}
-                        disabled={product.stockQuantity === 0}
-                        fullWidth
-                        sx={{
-                          py: 1.2,
-                          borderRadius: 2,
-                          fontWeight: 600,
-                          textTransform: 'none',
-                          fontSize: '0.95rem',
-                          boxShadow: 2,
-                          '&:hover': {
-                            boxShadow: 4,
-                          },
-                        }}
-                      >
-                        {product.stockQuantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                      </Button>
-                    </CardActions>
-                  </Card>
+                  <EnhancedProductCard 
+                    product={{
+                      ...product,
+                      stock: product.stockQuantity,
+                    }} 
+                    onAddToCart={handleAddToCart} 
+                  />
                 </Grid>
               ))}
             </Grid>

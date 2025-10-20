@@ -14,7 +14,6 @@ import {
 } from '@mui/material';
 import {
   ExpandMore,
-  HelpOutline,
   ShoppingCart,
   LocalShipping,
   Payment,
@@ -67,7 +66,7 @@ function FAQ() {
         },
         {
           question: 'Is delivery free?',
-          answer: 'Delivery is free for orders above Rs. 2,500 in central Kurunegala. For other areas, delivery charges apply: Zone 2 - Rs. 150, Zone 3 - Rs. 300.',
+          answer: 'Delivery charges vary by zone: Zone 1 (Central Kurunegala) - Free, Zone 2 - Rs. 150, Zone 3 - Rs. 300.',
         },
         {
           question: 'What if I\'m not home during delivery?',
