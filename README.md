@@ -68,8 +68,10 @@ Customer Places Order → Admin Approves → Admin Assigns Delivery Agent
 
 ## 📋 Prerequisites
 
-- Node.js (v16 or higher)
-- MySQL (v8.0 or higher)
+- **Java 21** or higher
+- **Maven 3.8+** (for building backend)
+- **Node.js 16+** (for frontend)
+- **MySQL 8.0+** (database)
 - npm or yarn
 
 ## 🚀 Installation & Setup
@@ -77,7 +79,7 @@ Customer Places Order → Admin Approves → Admin Assigns Delivery Agent
 ### 1. Clone the repository
 ```bash
 git clone <repository-url>
-cd ccmart
+cd C-C_Mart
 ```
 
 ### 2. Database Setup
@@ -86,30 +88,41 @@ cd ccmart
 CREATE DATABASE ccmart_db;
 ```
 
-2. Update database credentials in `backend/start.js`:
-```javascript
-process.env.DB_USER = 'root';
-process.env.DB_PASSWORD = 'Root123@';
-process.env.DB_NAME = 'ccmart_db';
+2. Update database credentials in `backend/src/main/resources/application.properties`:
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/ccmart_db
+spring.datasource.username=root
+spring.datasource.password=Root123@
 ```
 
-### 3. Backend Setup
-```bash
-cd backend
-npm install
-npm start
-```
-
-The backend will start on `http://localhost:8080`
-
-### 4. Frontend Setup
+### 3. **Build Frontend FIRST** (Important!)
 ```bash
 cd frontend
 npm install
-npm start
+npm run build
+```
+This creates the `frontend/build/` directory needed by the backend.
+
+### 4. Backend Setup
+```bash
+cd ../backend
+mvn clean package
+java -jar target/ccmart-backend-0.0.1-SNAPSHOT.jar
+```
+Or run in development mode:
+```bash
+mvn spring-boot:run
 ```
 
-The frontend will start on `http://localhost:3000`
+The backend will start on `http://localhost:8080` and serve both API and React frontend.
+
+### 5. Frontend Development (Optional)
+For hot-reloading during frontend development:
+```bash
+cd frontend
+npm start
+```
+This starts a dev server on `http://localhost:3000` with live updates.
 
 ## 🔑 Default Admin Credentials
 
