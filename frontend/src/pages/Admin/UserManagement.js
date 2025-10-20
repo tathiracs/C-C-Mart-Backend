@@ -218,23 +218,13 @@ function UserManagement() {
     <Container maxWidth="lg">
       <Box sx={{ py: 4 }}>
         {/* Header */}
-        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Typography variant="h4" gutterBottom>
-              User Management
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Manage user accounts and permissions
-            </Typography>
-          </Box>
-          <Button
-            variant="contained"
-            startIcon={<PersonAdd />}
-            onClick={() => handleOpenDialog()}
-            disabled
-          >
-            Add User
-          </Button>
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            User Management
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Manage user accounts and permissions
+          </Typography>
         </Box>
 
         {/* User Stats */}
