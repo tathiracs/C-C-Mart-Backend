@@ -8,6 +8,8 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByStatus(String status);
     List<Order> findByUserId(Long userId);
+    boolean existsByUserId(Long userId);
+    long countByUserId(Long userId);
     
     // Native query to get ALL orders from database
     @Query(value = "SELECT * FROM orders ORDER BY id DESC", nativeQuery = true)

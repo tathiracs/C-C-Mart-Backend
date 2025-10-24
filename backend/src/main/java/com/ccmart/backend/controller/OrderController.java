@@ -5,6 +5,7 @@ import com.ccmart.backend.model.OrderItem;
 import com.ccmart.backend.model.Product;
 import com.ccmart.backend.model.User;
 import com.ccmart.backend.model.DeliveryAgent;
+import com.ccmart.backend.dto.OrderDTO;
 import com.ccmart.backend.repository.OrderRepository;
 import com.ccmart.backend.repository.ProductRepository;
 import com.ccmart.backend.repository.UserRepository;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -90,21 +92,25 @@ public class OrderController {
                 "SELECT * FROM orders ORDER BY id DESC", Order.class)
                 .getResultList();
             
+            // Convert to DTOs to handle deleted/inactive users gracefully
+            List<OrderDTO> orderDTOs = allOrders.stream()
+                .map(OrderDTO::fromOrder)
+                .collect(Collectors.toList());
+            
             System.out.println("====================================");
             System.out.println("GET /api/orders/all called by admin");
             System.out.println("Using EntityManager native query");
-            System.out.println("Total orders retrieved: " + allOrders.size());
-            if (allOrders.size() > 0) {
+            System.out.println("Total orders retrieved: " + orderDTOs.size());
+            if (orderDTOs.size() > 0) {
                 System.out.println("Order IDs: ");
-                for (Order order : allOrders) {
+                for (OrderDTO order : orderDTOs) {
                     System.out.println("  - Order #" + order.getId() + 
-                        " | User: " + order.getUser().getName() + 
-                        " (ID: " + order.getUser().getId() + ")" +
+                        " | User: " + order.getUser().getDisplayName() + 
                         " | Status: " + order.getStatus());
                 }
             }
             System.out.println("====================================");
-            return ResponseEntity.ok(allOrders);
+            return ResponseEntity.ok(orderDTOs);
         } catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body("Invalid user ID format");
         } catch (Exception e) {

@@ -4,10 +4,14 @@ import com.ccmart.backend.model.Product;
 import com.ccmart.backend.model.Category;
 import com.ccmart.backend.repository.ProductRepository;
 import com.ccmart.backend.repository.CategoryRepository;
+import com.ccmart.backend.repository.OrderItemRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -16,10 +20,12 @@ public class ProductController {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final OrderItemRepository orderItemRepository;
 
-    public ProductController(ProductRepository productRepository, CategoryRepository categoryRepository) {
+    public ProductController(ProductRepository productRepository, CategoryRepository categoryRepository, OrderItemRepository orderItemRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
+        this.orderItemRepository = orderItemRepository;
     }
 
     @GetMapping
@@ -92,12 +98,62 @@ public class ProductController {
     @DeleteMapping("/{id}")
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> delete(@PathVariable Long id) {
-        Optional<Product> existing = productRepository.findById(id);
-        if (existing.isEmpty()) return ResponseEntity.status(404).body("Product not found");
-        Product e = existing.get();
-        e.setIsActive(false);
-        productRepository.save(e);
-        return ResponseEntity.ok("Product deleted");
+        try {
+            Optional<Product> existing = productRepository.findById(id);
+            if (existing.isEmpty()) {
+                return ResponseEntity.status(404).body("Product not found");
+            }
+            
+            Product product = existing.get();
+
+            // If the product is in order history, deactivate instead of deleting to preserve data
+            if (orderItemRepository.existsByProductId(id)) {
+                if (Boolean.FALSE.equals(product.getIsActive())) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", true);
+                    response.put("message", "Product already inactive; order history preserved");
+                    response.put("deactivated", true);
+                    return ResponseEntity.ok(response);
+                }
+
+                product.setIsActive(false);
+                productRepository.save(product);
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Product deactivated to preserve order history");
+                response.put("deactivated", true);
+                response.put("orders", orderItemRepository.countByProductId(id));
+                return ResponseEntity.ok(response);
+            }
+
+            // Try to hard delete if no order history exists
+            try {
+                productRepository.deleteById(id);
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Product deleted successfully");
+                response.put("deleted", true);
+
+                return ResponseEntity.ok(response);
+            } catch (DataIntegrityViolationException dive) {
+                // Fallback: if any other constraint prevents deletion, deactivate instead
+                product.setIsActive(false);
+                productRepository.save(product);
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Product has related records; deactivated instead");
+                response.put("deactivated", true);
+
+                return ResponseEntity.ok(response);
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error deleting product: " + e.getMessage());
+        }
     }
 
     // Fix endpoint to activate all products

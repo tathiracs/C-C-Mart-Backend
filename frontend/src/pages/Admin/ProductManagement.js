@@ -237,7 +237,7 @@ function ProductManagement() {
   };
 
   const handleDelete = async (productId) => {
-    if (!window.confirm('Are you sure you want to delete this product? This will hide it from customers.')) {
+    if (!window.confirm('Are you sure you want to delete this product?')) {
       return;
     }
     
@@ -245,7 +245,10 @@ function ProductManagement() {
       console.log('Deleting product:', productId);
       const response = await productsAPI.deleteProduct(productId);
       console.log('Delete response:', response);
-      toast.success('Product deleted successfully!');
+      
+      const actionMessage = response?.data?.message
+        || (response?.data?.deactivated ? 'Product deactivated successfully!' : 'Product deleted successfully!');
+      toast.success(actionMessage);
       await fetchProducts();
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -254,7 +257,7 @@ function ProductManagement() {
         || error.response?.data 
         || error.message 
         || 'Failed to delete product';
-      toast.error(errorMessage);
+      toast.error(typeof errorMessage === 'string' ? errorMessage : 'Failed to delete product');
     }
   };
 

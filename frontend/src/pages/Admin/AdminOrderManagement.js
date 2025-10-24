@@ -278,9 +278,24 @@ function AdminOrderManagement() {
               <TableRow key={order.id}>
                 <TableCell>#{order.id}</TableCell>
                 <TableCell>
-                  <Typography variant="body2">{order.user?.name || 'N/A'}</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    {order.user?.email}
+                  <Typography 
+                    variant="body2"
+                    sx={{ 
+                      color: order.user?.isDeleted ? 'error.main' : 
+                             !order.user?.isActive ? 'warning.main' : 'text.primary',
+                      fontStyle: (order.user?.isDeleted || !order.user?.isActive) ? 'italic' : 'normal'
+                    }}
+                  >
+                    {order.user?.displayName || order.user?.name || 'N/A'}
+                  </Typography>
+                  <Typography 
+                    variant="caption" 
+                    color="textSecondary"
+                    sx={{ 
+                      color: order.user?.isDeleted ? 'error.light' : 'textSecondary'
+                    }}
+                  >
+                    {order.user?.email || 'N/A'}
                   </Typography>
                 </TableCell>
                 <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
@@ -381,8 +396,15 @@ function AdminOrderManagement() {
               <Typography variant="subtitle2" color="textSecondary">
                 Order #{selectedOrder.id}
               </Typography>
-              <Typography variant="body2">
-                Customer: {selectedOrder.user?.name}
+              <Typography 
+                variant="body2"
+                sx={{ 
+                  color: selectedOrder.user?.isDeleted ? 'error.main' : 
+                         !selectedOrder.user?.isActive ? 'warning.main' : 'text.primary',
+                  fontStyle: (selectedOrder.user?.isDeleted || !selectedOrder.user?.isActive) ? 'italic' : 'normal'
+                }}
+              >
+                Customer: {selectedOrder.user?.displayName || selectedOrder.user?.name || 'N/A'}
               </Typography>
               <Typography variant="body2">
                 Total: {formatCurrency(selectedOrder.totalAmount)}

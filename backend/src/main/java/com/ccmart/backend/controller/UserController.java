@@ -1,7 +1,9 @@
 package com.ccmart.backend.controller;
 
 import com.ccmart.backend.model.User;
+import com.ccmart.backend.repository.OrderRepository;
 import com.ccmart.backend.repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,10 +19,12 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final OrderRepository orderRepository;
 
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, OrderRepository orderRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.orderRepository = orderRepository;
     }
 
     @GetMapping("/me")
@@ -270,19 +274,56 @@ public class UserController {
                 return ResponseEntity.status(400).body("You cannot delete your own account");
             }
 
-            // Find and delete the user
+            // Find target user
             Optional<User> userOpt = userRepository.findById(id);
             if (userOpt.isEmpty()) {
                 return ResponseEntity.status(404).body("User not found");
             }
 
-            userRepository.deleteById(id);
-            
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "User deleted successfully");
-            
-            return ResponseEntity.ok(response);
+            User userToRemove = userOpt.get();
+
+            // If the user has order history, deactivate instead of deleting to preserve data
+            if (orderRepository.existsByUserId(id)) {
+                if (Boolean.FALSE.equals(userToRemove.getIsActive())) {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("success", true);
+                    response.put("message", "User already inactive; order history preserved");
+                    response.put("deactivated", true);
+                    return ResponseEntity.ok(response);
+                }
+
+                userToRemove.setIsActive(false);
+                userRepository.save(userToRemove);
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "User deactivated to preserve order history");
+                response.put("deactivated", true);
+                response.put("orders", orderRepository.countByUserId(id));
+                return ResponseEntity.ok(response);
+            }
+
+            try {
+                userRepository.deleteById(id);
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "User deleted successfully");
+                response.put("deleted", true);
+
+                return ResponseEntity.ok(response);
+            } catch (DataIntegrityViolationException dive) {
+                userToRemove.setIsActive(false);
+                userRepository.save(userToRemove);
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "User has related records; account deactivated instead");
+                response.put("deactivated", true);
+                response.put("orders", orderRepository.countByUserId(id));
+
+                return ResponseEntity.ok(response);
+            }
             
         } catch (NumberFormatException e) {
             return ResponseEntity.status(500).body("Invalid user ID format");

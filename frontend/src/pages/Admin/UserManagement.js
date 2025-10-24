@@ -178,12 +178,15 @@ function UserManagement() {
   const handleDelete = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        await usersAPI.deleteUser(userId);
-        toast.success('User deleted successfully!');
+        const response = await usersAPI.deleteUser(userId);
+        const actionMessage = response?.data?.message
+          || (response?.data?.deactivated ? 'User deactivated successfully!' : 'User deleted successfully!');
+        toast.success(actionMessage);
         fetchUsers();
       } catch (error) {
         console.error('Error deleting user:', error);
-        toast.error('Failed to delete user');
+        const errorMessage = error.response?.data ?? 'Failed to delete user';
+        toast.error(typeof errorMessage === 'string' ? errorMessage : 'Failed to delete user');
       }
     }
   };
