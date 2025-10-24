@@ -389,6 +389,14 @@ function ProductManagement() {
                       <Typography variant="body2" color="text.secondary">
                         {product.description}
                       </Typography>
+                      {product.isActive === false && (
+                        <Chip
+                          label="UNPUBLISHED"
+                          size="small"
+                          color="error"
+                          sx={{ mt: 0.5, fontWeight: 'bold' }}
+                        />
+                      )}
                     </Box>
                   </TableCell>
                   <TableCell>
