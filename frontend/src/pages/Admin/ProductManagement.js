@@ -30,6 +30,8 @@ import {
   CircularProgress,
   Alert,
   Snackbar,
+  FormControlLabel,
+  Checkbox,
 } from '@mui/material';
 import {
   Add,
@@ -38,6 +40,8 @@ import {
   Visibility,
   Search,
   FilterList,
+  CheckBox,
+  CheckBoxOutlineBlank,
 } from '@mui/icons-material';
 import { productsAPI, categoriesAPI } from '../../services/api';
 import { toast } from 'react-toastify';
@@ -51,6 +55,8 @@ function ProductManagement() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [showUnpublished, setShowUnpublished] = useState(false);
+  const [showPublished, setShowPublished] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -265,6 +271,20 @@ function ProductManagement() {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = !selectedCategory || product.category?.id == selectedCategory;
+    
+    // Handle publish status filters
+    if (showUnpublished && showPublished) {
+      // Both checked: show all products
+      return matchesSearch && matchesCategory;
+    } else if (showUnpublished) {
+      // Only unpublished checked: show only inactive
+      return matchesSearch && matchesCategory && product.isActive === false;
+    } else if (showPublished) {
+      // Only published checked: show only active
+      return matchesSearch && matchesCategory && product.isActive === true;
+    }
+    
+    // Neither checked: show all products
     return matchesSearch && matchesCategory;
   });
 
@@ -330,20 +350,67 @@ function ProductManagement() {
               </FormControl>
             </Grid>
             <Grid item xs={12} md={2}>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<FilterList />}
-                onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory('');
-                }}
-              >
-                Clear Filters
-              </Button>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={showUnpublished}
+                      onChange={(e) => setShowUnpublished(e.target.checked)}
+                      sx={{
+                        color: 'error.main',
+                        '&.Mui-checked': {
+                          color: 'error.main',
+                        },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography variant="body2" sx={{ fontWeight: showUnpublished ? 'bold' : 'normal' }}>
+                      Unpublished
+                    </Typography>
+                  }
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={showPublished}
+                      onChange={(e) => setShowPublished(e.target.checked)}
+                      sx={{
+                        color: 'success.main',
+                        '&.Mui-checked': {
+                          color: 'success.main',
+                        },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography variant="body2" sx={{ fontWeight: showPublished ? 'bold' : 'normal' }}>
+                      Published
+                    </Typography>
+                  }
+                />
+              </Box>
             </Grid>
           </Grid>
         </Paper>
+
+        {/* Clear All Filters Button - Optional */}
+        {(searchTerm || selectedCategory || showUnpublished || showPublished) && (
+          <Box sx={{ mb: 2 }}>
+            <Button
+              size="small"
+              variant="text"
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCategory('');
+                setShowUnpublished(false);
+                setShowPublished(false);
+              }}
+            >
+              Clear All Filters
+            </Button>
+          </Box>
+        )}
 
         {error && (
           <Alert severity="error" sx={{ mb: 3 }}>
