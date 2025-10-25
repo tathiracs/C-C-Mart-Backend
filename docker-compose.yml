@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: ccmart-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ccmart_db
+      MYSQL_USER: ccmart_user
+      MYSQL_PASSWORD: ccmart_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - ccmart-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Application
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ccmart-backend
+    environment:
+      PORT: 8080
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ccmart_user
+      DB_PASSWORD: ccmart_password
+      JWT_SECRET: local-development-jwt-secret-key-for-testing
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ccmart-network
+    restart: unless-stopped
+
+networks:
+  ccmart-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local

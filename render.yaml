@@ -1,0 +1,46 @@
+services:
+  # Backend Web Service
+  - type: web
+    name: ccmart-backend
+    runtime: docker
+    repo: https://github.com/tathiracs/C-C-Mart-Backend
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DB_HOST
+        fromDatabase:
+          name: ccmart-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: ccmart-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: ccmart-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: ccmart-db
+          property: password
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ccmart-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://your-frontend.vercel.app
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+  # MySQL Database
+  - type: database
+    name: ccmart-db
+    databaseName: ccmart_db
+    user: ccmart_user
+    plan: free
+    region: oregon

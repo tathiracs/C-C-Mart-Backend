@@ -12,15 +12,25 @@ public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    CorsConfiguration config = new CorsConfiguration();
+        CorsConfiguration config = new CorsConfiguration();
 
-    // Allow local dev frontends while supporting credentials
-    config.setAllowedOriginPatterns(java.util.List.of("http://localhost:3000", "http://127.0.0.1:3000"));
-    config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-    config.addAllowedHeader("*");
-    config.setExposedHeaders(java.util.List.of("Authorization"));
-    config.setAllowCredentials(true);
-    config.setMaxAge(3600L);
+        // Allow both local dev and production frontends
+        String frontendUrl = System.getenv("FRONTEND_URL");
+        java.util.List<String> allowedOrigins = new java.util.ArrayList<>();
+        allowedOrigins.add("http://localhost:3000");
+        allowedOrigins.add("http://127.0.0.1:3000");
+        
+        // Add production frontend URL if set
+        if (frontendUrl != null && !frontendUrl.isEmpty()) {
+            allowedOrigins.add(frontendUrl);
+        }
+        
+        config.setAllowedOriginPatterns(allowedOrigins);
+        config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.addAllowedHeader("*");
+        config.setExposedHeaders(java.util.List.of("Authorization"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
 
         source.registerCorsConfiguration("/api/**", config);
         return new CorsFilter(source);
