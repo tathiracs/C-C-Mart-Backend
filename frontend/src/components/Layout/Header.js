@@ -29,6 +29,7 @@ import {
 
 import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
+import NotificationBell from './NotificationBell';
 
 
 function Header() {
@@ -321,6 +322,9 @@ function Header() {
                 <ShoppingCart />
               </Badge>
             </IconButton>
+
+            {/* Notification Bell - Only for authenticated customers */}
+            {isAuthenticated && user?.role?.toUpperCase() === 'CUSTOMER' && <NotificationBell />}
 
             {/* User Menu */}
             {isAuthenticated ? (

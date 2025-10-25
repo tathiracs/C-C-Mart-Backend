@@ -16,10 +16,13 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final NotificationService notificationService;
 
-    public OrderService(OrderRepository orderRepository, ProductRepository productRepository) {
+    public OrderService(OrderRepository orderRepository, ProductRepository productRepository,
+                       NotificationService notificationService) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -69,8 +72,20 @@ public class OrderService {
             // Set order total
             order.setTotalAmount(total);
             
-            // Save and return order
-            return orderRepository.save(order);
+            // Save order
+            Order savedOrder = orderRepository.save(order);
+            
+            // Create notification for order placement
+            try {
+                notificationService.createOrderNotification(savedOrder, null, savedOrder.getStatus());
+                System.out.println("✅ Notification created for new order: " + savedOrder.getId());
+            } catch (Exception notifEx) {
+                // Log but don't fail the order creation
+                System.err.println("⚠️ Failed to create notification for order " + savedOrder.getId() + ": " + notifEx.getMessage());
+            }
+            
+            // Return saved order
+            return savedOrder;
             
         } catch (Exception ex) {
             // Log and rethrow

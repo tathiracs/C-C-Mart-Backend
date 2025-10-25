@@ -5,6 +5,7 @@ import com.ccmart.backend.model.OrderItem;
 import com.ccmart.backend.model.Product;
 import com.ccmart.backend.model.User;
 import com.ccmart.backend.model.DeliveryAgent;
+import com.ccmart.backend.model.Notification;
 import com.ccmart.backend.dto.OrderDTO;
 import com.ccmart.backend.repository.OrderRepository;
 import com.ccmart.backend.repository.ProductRepository;
@@ -34,18 +35,21 @@ public class OrderController {
     private final ProductRepository productRepository;
     private final DeliveryAgentRepository deliveryAgentRepository;
     private final com.ccmart.backend.service.OrderService orderService;
+    private final com.ccmart.backend.service.NotificationService notificationService;
     
     @PersistenceContext
     private EntityManager entityManager;
 
     public OrderController(OrderRepository orderRepository, UserRepository userRepository, 
                           ProductRepository productRepository, DeliveryAgentRepository deliveryAgentRepository,
-                          com.ccmart.backend.service.OrderService orderService) {
+                          com.ccmart.backend.service.OrderService orderService,
+                          com.ccmart.backend.service.NotificationService notificationService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.deliveryAgentRepository = deliveryAgentRepository;
         this.orderService = orderService;
+        this.notificationService = notificationService;
     }
 
     @GetMapping
@@ -268,8 +272,24 @@ public class OrderController {
         }
 
         Order order = orderOpt.get();
+        String oldStatus = order.getStatus();
         order.setStatus(newStatus);
         orderRepository.save(order);
+
+        // Create notification for the user when status changes
+        if (!oldStatus.equals(newStatus)) {
+            try {
+                System.out.println("Creating notification for order " + order.getId() + 
+                                 " - Status changed from " + oldStatus + " to " + newStatus);
+                System.out.println("User ID: " + order.getUser().getId());
+                Notification notification = notificationService.createOrderNotification(order, oldStatus, newStatus);
+                System.out.println("Notification created successfully with ID: " + notification.getId());
+            } catch (Exception e) {
+                // Log error but don't fail the status update
+                System.err.println("Failed to create notification: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
 
         return ResponseEntity.ok(order);
     }
