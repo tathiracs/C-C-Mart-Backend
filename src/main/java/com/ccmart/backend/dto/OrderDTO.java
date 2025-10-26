@@ -2,11 +2,12 @@ package com.ccmart.backend.dto;
 
 import com.ccmart.backend.model.Order;
 import com.ccmart.backend.model.User;
-import com.ccmart.backend.model.OrderItem;
 import com.ccmart.backend.model.DeliveryAgent;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class OrderDTO {
     private Long id;
@@ -24,7 +25,7 @@ public class OrderDTO {
     private LocalDateTime updatedAt;
     private LocalDateTime approvedAt;
     private LocalDateTime assignedAt;
-    private List<OrderItem> items;
+    private List<OrderItemDTO> orderItems;  // Changed to OrderItemDTO for proper serialization
     private DeliveryAgent deliveryAgent;
     
     // User info - enhanced to show deleted/inactive status
@@ -89,7 +90,16 @@ public class OrderDTO {
         dto.updatedAt = order.getUpdatedAt();
         dto.approvedAt = order.getApprovedAt();
         dto.assignedAt = order.getAssignedAt();
-        dto.items = order.getItems();
+        
+        // Convert OrderItems to OrderItemDTOs
+        if (order.getItems() != null && !order.getItems().isEmpty()) {
+            dto.orderItems = order.getItems().stream()
+                .map(OrderItemDTO::fromOrderItem)
+                .collect(Collectors.toList());
+        } else {
+            dto.orderItems = new ArrayList<>();
+        }
+        
         dto.deliveryAgent = order.getDeliveryAgent();
         dto.user = new UserInfo(order.getUser());
         return dto;
@@ -141,8 +151,12 @@ public class OrderDTO {
     public LocalDateTime getAssignedAt() { return assignedAt; }
     public void setAssignedAt(LocalDateTime assignedAt) { this.assignedAt = assignedAt; }
     
-    public List<OrderItem> getItems() { return items; }
-    public void setItems(List<OrderItem> items) { this.items = items; }
+    public List<OrderItemDTO> getOrderItems() { return orderItems; }
+    public void setOrderItems(List<OrderItemDTO> orderItems) { this.orderItems = orderItems; }
+    
+    // Backwards compatibility - some code may still use 'items' instead of 'orderItems'
+    public List<OrderItemDTO> getItems() { return orderItems; }
+    public void setItems(List<OrderItemDTO> items) { this.orderItems = items; }
     
     public DeliveryAgent getDeliveryAgent() { return deliveryAgent; }
     public void setDeliveryAgent(DeliveryAgent deliveryAgent) { this.deliveryAgent = deliveryAgent; }

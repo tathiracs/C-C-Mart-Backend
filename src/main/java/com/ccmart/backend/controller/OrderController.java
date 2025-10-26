@@ -11,6 +11,7 @@ import com.ccmart.backend.repository.OrderRepository;
 import com.ccmart.backend.repository.ProductRepository;
 import com.ccmart.backend.repository.UserRepository;
 import com.ccmart.backend.repository.DeliveryAgentRepository;
+import com.ccmart.backend.repository.OrderItemRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,6 +35,7 @@ public class OrderController {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final DeliveryAgentRepository deliveryAgentRepository;
+    private final OrderItemRepository orderItemRepository;
     private final com.ccmart.backend.service.OrderService orderService;
     private final com.ccmart.backend.service.NotificationService notificationService;
     
@@ -42,12 +44,14 @@ public class OrderController {
 
     public OrderController(OrderRepository orderRepository, UserRepository userRepository, 
                           ProductRepository productRepository, DeliveryAgentRepository deliveryAgentRepository,
+                          OrderItemRepository orderItemRepository,
                           com.ccmart.backend.service.OrderService orderService,
                           com.ccmart.backend.service.NotificationService notificationService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.deliveryAgentRepository = deliveryAgentRepository;
+        this.orderItemRepository = orderItemRepository;
         this.orderService = orderService;
         this.notificationService = notificationService;
     }
@@ -90,11 +94,8 @@ public class OrderController {
                 return ResponseEntity.status(403).body("Access denied. Admin only.");
             }
             
-            // Use EntityManager with native query to bypass all JPA filtering
-            @SuppressWarnings("unchecked")
-            List<Order> allOrders = entityManager.createNativeQuery(
-                "SELECT * FROM orders ORDER BY id DESC", Order.class)
-                .getResultList();
+            // Use the same method as client orders - this works!
+            List<Order> allOrders = orderRepository.findAll();
             
             // Convert to DTOs to handle deleted/inactive users gracefully
             List<OrderDTO> orderDTOs = allOrders.stream()
@@ -103,14 +104,15 @@ public class OrderController {
             
             System.out.println("====================================");
             System.out.println("GET /api/orders/all called by admin");
-            System.out.println("Using EntityManager native query");
+            System.out.println("Using orderRepository.findAll()");
             System.out.println("Total orders retrieved: " + orderDTOs.size());
             if (orderDTOs.size() > 0) {
                 System.out.println("Order IDs: ");
                 for (OrderDTO order : orderDTOs) {
                     System.out.println("  - Order #" + order.getId() + 
                         " | User: " + order.getUser().getDisplayName() + 
-                        " | Status: " + order.getStatus());
+                        " | Status: " + order.getStatus() +
+                        " | Items: " + (order.getOrderItems() != null ? order.getOrderItems().size() : 0));
                 }
             }
             System.out.println("====================================");
@@ -143,7 +145,282 @@ public class OrderController {
     public ResponseEntity<?> getOne(@PathVariable Long id, Authentication authentication) {
         Optional<Order> o = orderRepository.findById(id);
         if (o.isEmpty()) return ResponseEntity.status(404).body("Order not found");
-        return ResponseEntity.ok(o.get());
+        
+        Order order = o.get();
+        System.out.println("====================================");
+        System.out.println("GET /api/orders/" + id);
+        System.out.println("Order ID: " + order.getId());
+        System.out.println("Order Number: " + order.getOrderNumber());
+        System.out.println("Total Amount: " + order.getTotalAmount());
+        System.out.println("Items count: " + (order.getItems() != null ? order.getItems().size() : "NULL"));
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                System.out.println("  - Item: " + item.getProduct().getName() + 
+                    " | Qty: " + item.getQuantity() + 
+                    " | Price: " + item.getPrice());
+            }
+        }
+        System.out.println("====================================");
+        
+        return ResponseEntity.ok(order);
+    }
+    
+    // Get order details with items (for admin dashboard) - Enhanced version
+    @GetMapping("/{id}/details")
+    public ResponseEntity<?> getOrderDetails(@PathVariable Long id) {
+        try {
+            Optional<Order> orderOpt = orderRepository.findById(id);
+            if (orderOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Order not found");
+            }
+            
+            Order order = orderOpt.get();
+            
+            // Explicitly fetch items using repository to ensure they're loaded
+            List<OrderItem> items = orderItemRepository.findByOrderId(id);
+            
+            // Force initialization of items collection if using JPA relationship
+            if (order.getItems() != null) {
+                order.getItems().size(); // Trigger lazy loading
+            }
+            
+            // Log for debugging
+            System.out.println("====================================");
+            System.out.println("GET /api/orders/" + id + "/details");
+            System.out.println("Order ID: " + order.getId());
+            System.out.println("Order Number: " + order.getOrderNumber());
+            System.out.println("Total Amount: " + order.getTotalAmount());
+            System.out.println("Items from JPA: " + (order.getItems() != null ? order.getItems().size() : "NULL"));
+            System.out.println("Items from Repository: " + items.size());
+            
+            if (!items.isEmpty()) {
+                for (OrderItem item : items) {
+                    System.out.println("  - Product: " + item.getProduct().getName() + 
+                        " | Qty: " + item.getQuantity() + 
+                        " | Price: " + item.getPrice());
+                }
+            } else {
+                System.out.println("  ⚠️ NO ITEMS FOUND FOR THIS ORDER!");
+            }
+            System.out.println("====================================");
+            
+            // Create enhanced response with guaranteed items
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("id", order.getId());
+            response.put("orderNumber", order.getOrderNumber());
+            response.put("totalAmount", order.getTotalAmount());
+            response.put("status", order.getStatus());
+            response.put("paymentStatus", order.getPaymentStatus());
+            response.put("paymentMethod", order.getPaymentMethod());
+            response.put("deliveryAddress", order.getDeliveryAddress());
+            response.put("deliveryPhone", order.getDeliveryPhone());
+            response.put("deliveryNotes", order.getDeliveryNotes());
+            response.put("createdAt", order.getCreatedAt());
+            response.put("items", items); // Use explicitly fetched items
+            response.put("itemsCount", items.size());
+            
+            // Add user info
+            if (order.getUser() != null) {
+                Map<String, Object> userInfo = new java.util.HashMap<>();
+                userInfo.put("id", order.getUser().getId());
+                userInfo.put("name", order.getUser().getName());
+                userInfo.put("email", order.getUser().getEmail());
+                response.put("user", userInfo);
+            }
+            
+            // Add delivery agent if assigned
+            if (order.getDeliveryAgent() != null) {
+                response.put("deliveryAgent", order.getDeliveryAgent());
+            }
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+    
+    // Diagnostic endpoint to check order items directly from database
+    @GetMapping("/{id}/items-debug")
+    public ResponseEntity<?> debugOrderItems(@PathVariable Long id) {
+        try {
+            // First check if order exists
+            Optional<Order> orderOpt = orderRepository.findById(id);
+            if (orderOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Order #" + id + " not found in database");
+            }
+            
+            Order order = orderOpt.get();
+            
+            // Query order_items table directly using raw SQL
+            @SuppressWarnings("unchecked")
+            List<Object[]> items = entityManager.createNativeQuery(
+                "SELECT oi.id, oi.product_id, p.name, oi.quantity, oi.price " +
+                "FROM order_items oi " +
+                "JOIN products p ON oi.product_id = p.id " +
+                "WHERE oi.order_id = ?1")
+                .setParameter(1, id)
+                .getResultList();
+            
+            System.out.println("========================================");
+            System.out.println("🔍 DEBUG: Order Items for Order #" + id);
+            System.out.println("----------------------------------------");
+            System.out.println("Order exists: YES");
+            System.out.println("Order Number: " + order.getOrderNumber());
+            System.out.println("Order Total: " + order.getTotalAmount());
+            System.out.println("Order Status: " + order.getStatus());
+            System.out.println("----------------------------------------");
+            System.out.println("Items in DATABASE (raw SQL): " + items.size());
+            
+            List<Map<String, Object>> result = new java.util.ArrayList<>();
+            
+            if (items.isEmpty()) {
+                System.out.println("❌ NO ITEMS FOUND IN DATABASE!");
+                System.out.println("This order was created WITHOUT items!");
+            } else {
+                for (Object[] row : items) {
+                    Map<String, Object> item = new java.util.HashMap<>();
+                    item.put("itemId", row[0]);
+                    item.put("productId", row[1]);
+                    item.put("productName", row[2]);
+                    item.put("quantity", row[3]);
+                    item.put("price", row[4]);
+                    result.add(item);
+                    
+                    System.out.println("  ✅ Item #" + row[0] + ": " + row[2] + 
+                        " (Qty: " + row[3] + ", Price: " + row[4] + ")");
+                }
+            }
+            System.out.println("========================================");
+            
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("orderId", id);
+            response.put("orderNumber", order.getOrderNumber());
+            response.put("orderTotal", order.getTotalAmount());
+            response.put("itemsCount", items.size());
+            response.put("items", result);
+            response.put("hasItems", !items.isEmpty());
+            response.put("message", items.isEmpty() ? 
+                "⚠️ Order exists but has NO items in database. Order was likely created incorrectly." : 
+                "✅ Order has " + items.size() + " item(s)");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+    
+    // Get order items separately (alternative approach)
+    @GetMapping("/{id}/items")
+    public ResponseEntity<?> getOrderItems(@PathVariable Long id) {
+        try {
+            // Verify order exists
+            Optional<Order> orderOpt = orderRepository.findById(id);
+            if (orderOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Order not found");
+            }
+            
+            // Fetch items using repository
+            List<OrderItem> items = orderItemRepository.findByOrderId(id);
+            
+            System.out.println("====================================");
+            System.out.println("GET /api/orders/" + id + "/items");
+            System.out.println("Found " + items.size() + " items using OrderItemRepository");
+            for (OrderItem item : items) {
+                System.out.println("  - " + item.getProduct().getName() + 
+                    " | Qty: " + item.getQuantity() + 
+                    " | Price: " + item.getPrice());
+            }
+            System.out.println("====================================");
+            
+            return ResponseEntity.ok(Map.of(
+                "orderId", id,
+                "itemsCount", items.size(),
+                "items", items
+            ));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+    
+    // ADMIN: Manually add items to an existing order (for testing/fixing broken orders)
+    @PostMapping("/{id}/add-items")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> addItemsToOrder(@PathVariable Long id, @RequestBody List<Map<String, Object>> itemsData) {
+        try {
+            Optional<Order> orderOpt = orderRepository.findById(id);
+            if (orderOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Order not found");
+            }
+            
+            Order order = orderOpt.get();
+            
+            System.out.println("========================================");
+            System.out.println("🔧 ADDING ITEMS TO ORDER #" + id);
+            System.out.println("Current items count: " + (order.getItems() != null ? order.getItems().size() : 0));
+            System.out.println("Items to add: " + itemsData.size());
+            
+            BigDecimal newTotal = order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO;
+            List<OrderItem> newItems = new java.util.ArrayList<>();
+            
+            for (Map<String, Object> itemData : itemsData) {
+                Long productId = Long.valueOf(itemData.get("productId").toString());
+                Integer quantity = Integer.valueOf(itemData.get("quantity").toString());
+                
+                Optional<Product> productOpt = productRepository.findById(productId);
+                if (productOpt.isEmpty()) {
+                    return ResponseEntity.badRequest().body("Product not found: " + productId);
+                }
+                
+                Product product = productOpt.get();
+                
+                OrderItem orderItem = new OrderItem();
+                orderItem.setOrder(order);
+                orderItem.setProduct(product);
+                orderItem.setQuantity(quantity);
+                orderItem.setPrice(product.getPrice());
+                
+                newItems.add(orderItem);
+                
+                BigDecimal itemTotal = product.getPrice().multiply(new BigDecimal(quantity));
+                newTotal = newTotal.add(itemTotal);
+                
+                System.out.println("  + Added: " + product.getName() + " x" + quantity + " = " + itemTotal);
+            }
+            
+            // Add new items to order
+            if (order.getItems() == null) {
+                order.setItems(new java.util.ArrayList<>());
+            }
+            order.getItems().addAll(newItems);
+            order.setTotalAmount(newTotal);
+            
+            // Save order (cascade will save items)
+            Order savedOrder = orderRepository.save(order);
+            
+            System.out.println("✅ Order updated!");
+            System.out.println("New total: " + savedOrder.getTotalAmount());
+            System.out.println("Total items: " + savedOrder.getItems().size());
+            System.out.println("========================================");
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Items added successfully",
+                "orderId", id,
+                "itemsAdded", newItems.size(),
+                "totalItems", savedOrder.getItems().size(),
+                "newTotal", savedOrder.getTotalAmount()
+            ));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
     }
 
     @PostMapping
