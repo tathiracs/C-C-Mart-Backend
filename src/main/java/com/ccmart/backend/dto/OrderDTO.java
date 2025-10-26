@@ -25,28 +25,30 @@ public class OrderDTO {
     private LocalDateTime updatedAt;
     private LocalDateTime approvedAt;
     private LocalDateTime assignedAt;
-    private List<OrderItemDTO> orderItems;  // Changed to OrderItemDTO for proper serialization
+    private List<OrderItemDTO> orderItems; // Changed to OrderItemDTO for proper serialization
     private DeliveryAgent deliveryAgent;
-    
+
     // User info - enhanced to show deleted/inactive status
     private UserInfo user;
-    
+
     public static class UserInfo {
         private Long id;
         private String name;
         private String email;
+        private String phone;
         private boolean isActive;
         private boolean isDeleted;
         private String displayName;
-        
+
         public UserInfo(User user) {
             if (user != null) {
                 this.id = user.getId();
                 this.name = user.getName();
                 this.email = user.getEmail();
+                this.phone = user.getPhone();
                 this.isActive = user.getIsActive() != null ? user.getIsActive() : true;
                 this.isDeleted = false;
-                
+
                 // Create display name based on user status
                 if (!this.isActive) {
                     this.displayName = user.getName() + " (Inactive Account)";
@@ -58,6 +60,7 @@ public class OrderDTO {
                 this.id = null;
                 this.name = "Deleted User";
                 this.email = "N/A";
+                this.phone = "N/A";
                 this.isActive = false;
                 this.isDeleted = true;
                 this.displayName = "[Deleted User]";
@@ -65,14 +68,35 @@ public class OrderDTO {
         }
 
         // Getters
-        public Long getId() { return id; }
-        public String getName() { return name; }
-        public String getEmail() { return email; }
-        public boolean isActive() { return isActive; }
-        public boolean isDeleted() { return isDeleted; }
-        public String getDisplayName() { return displayName; }
+        public Long getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getPhone() {
+            return phone;
+        }
+
+        public boolean isActive() {
+            return isActive;
+        }
+
+        public boolean isDeleted() {
+            return isDeleted;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
-    
+
     public static OrderDTO fromOrder(Order order) {
         OrderDTO dto = new OrderDTO();
         dto.id = order.getId();
@@ -90,77 +114,173 @@ public class OrderDTO {
         dto.updatedAt = order.getUpdatedAt();
         dto.approvedAt = order.getApprovedAt();
         dto.assignedAt = order.getAssignedAt();
-        
+
         // Convert OrderItems to OrderItemDTOs
         if (order.getItems() != null && !order.getItems().isEmpty()) {
             dto.orderItems = order.getItems().stream()
-                .map(OrderItemDTO::fromOrderItem)
-                .collect(Collectors.toList());
+                    .map(OrderItemDTO::fromOrderItem)
+                    .collect(Collectors.toList());
         } else {
             dto.orderItems = new ArrayList<>();
         }
-        
+
         dto.deliveryAgent = order.getDeliveryAgent();
         dto.user = new UserInfo(order.getUser());
         return dto;
     }
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    
-    public String getOrderNumber() { return orderNumber; }
-    public void setOrderNumber(String orderNumber) { this.orderNumber = orderNumber; }
-    
-    public BigDecimal getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
-    
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    
-    public String getPaymentStatus() { return paymentStatus; }
-    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
-    
-    public String getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
-    
-    public String getDeliveryAddress() { return deliveryAddress; }
-    public void setDeliveryAddress(String deliveryAddress) { this.deliveryAddress = deliveryAddress; }
-    
-    public String getDeliveryPhone() { return deliveryPhone; }
-    public void setDeliveryPhone(String deliveryPhone) { this.deliveryPhone = deliveryPhone; }
-    
-    public String getDeliveryNotes() { return deliveryNotes; }
-    public void setDeliveryNotes(String deliveryNotes) { this.deliveryNotes = deliveryNotes; }
-    
-    public LocalDateTime getDeliveryDate() { return deliveryDate; }
-    public void setDeliveryDate(LocalDateTime deliveryDate) { this.deliveryDate = deliveryDate; }
-    
-    public String getDeliveryTime() { return deliveryTime; }
-    public void setDeliveryTime(String deliveryTime) { this.deliveryTime = deliveryTime; }
-    
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-    
-    public LocalDateTime getApprovedAt() { return approvedAt; }
-    public void setApprovedAt(LocalDateTime approvedAt) { this.approvedAt = approvedAt; }
-    
-    public LocalDateTime getAssignedAt() { return assignedAt; }
-    public void setAssignedAt(LocalDateTime assignedAt) { this.assignedAt = assignedAt; }
-    
-    public List<OrderItemDTO> getOrderItems() { return orderItems; }
-    public void setOrderItems(List<OrderItemDTO> orderItems) { this.orderItems = orderItems; }
-    
-    // Backwards compatibility - some code may still use 'items' instead of 'orderItems'
-    public List<OrderItemDTO> getItems() { return orderItems; }
-    public void setItems(List<OrderItemDTO> items) { this.orderItems = items; }
-    
-    public DeliveryAgent getDeliveryAgent() { return deliveryAgent; }
-    public void setDeliveryAgent(DeliveryAgent deliveryAgent) { this.deliveryAgent = deliveryAgent; }
-    
-    public UserInfo getUser() { return user; }
-    public void setUser(UserInfo user) { this.user = user; }
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public String getDeliveryPhone() {
+        return deliveryPhone;
+    }
+
+    public void setDeliveryPhone(String deliveryPhone) {
+        this.deliveryPhone = deliveryPhone;
+    }
+
+    public String getDeliveryNotes() {
+        return deliveryNotes;
+    }
+
+    public void setDeliveryNotes(String deliveryNotes) {
+        this.deliveryNotes = deliveryNotes;
+    }
+
+    public LocalDateTime getDeliveryDate() {
+        return deliveryDate;
+    }
+
+    public void setDeliveryDate(LocalDateTime deliveryDate) {
+        this.deliveryDate = deliveryDate;
+    }
+
+    public String getDeliveryTime() {
+        return deliveryTime;
+    }
+
+    public void setDeliveryTime(String deliveryTime) {
+        this.deliveryTime = deliveryTime;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getApprovedAt() {
+        return approvedAt;
+    }
+
+    public void setApprovedAt(LocalDateTime approvedAt) {
+        this.approvedAt = approvedAt;
+    }
+
+    public LocalDateTime getAssignedAt() {
+        return assignedAt;
+    }
+
+    public void setAssignedAt(LocalDateTime assignedAt) {
+        this.assignedAt = assignedAt;
+    }
+
+    public List<OrderItemDTO> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItemDTO> orderItems) {
+        this.orderItems = orderItems;
+    }
+
+    // Backwards compatibility - some code may still use 'items' instead of
+    // 'orderItems'
+    public List<OrderItemDTO> getItems() {
+        return orderItems;
+    }
+
+    public void setItems(List<OrderItemDTO> items) {
+        this.orderItems = items;
+    }
+
+    public DeliveryAgent getDeliveryAgent() {
+        return deliveryAgent;
+    }
+
+    public void setDeliveryAgent(DeliveryAgent deliveryAgent) {
+        this.deliveryAgent = deliveryAgent;
+    }
+
+    public UserInfo getUser() {
+        return user;
+    }
+
+    public void setUser(UserInfo user) {
+        this.user = user;
+    }
 }
