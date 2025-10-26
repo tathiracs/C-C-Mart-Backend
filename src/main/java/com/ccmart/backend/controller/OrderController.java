@@ -143,7 +143,45 @@ public class OrderController {
     public ResponseEntity<?> getOne(@PathVariable Long id, Authentication authentication) {
         Optional<Order> o = orderRepository.findById(id);
         if (o.isEmpty()) return ResponseEntity.status(404).body("Order not found");
-        return ResponseEntity.ok(o.get());
+        
+        Order order = o.get();
+        System.out.println("====================================");
+        System.out.println("GET /api/orders/" + id);
+        System.out.println("Order ID: " + order.getId());
+        System.out.println("Order Number: " + order.getOrderNumber());
+        System.out.println("Total Amount: " + order.getTotalAmount());
+        System.out.println("Items count: " + (order.getItems() != null ? order.getItems().size() : "NULL"));
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                System.out.println("  - Item: " + item.getProduct().getName() + 
+                    " | Qty: " + item.getQuantity() + 
+                    " | Price: " + item.getPrice());
+            }
+        }
+        System.out.println("====================================");
+        
+        return ResponseEntity.ok(order);
+    }
+    
+    // Get order details with items (for admin dashboard)
+    @GetMapping("/{id}/details")
+    public ResponseEntity<?> getOrderDetails(@PathVariable Long id) {
+        Optional<Order> orderOpt = orderRepository.findById(id);
+        if (orderOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Order not found");
+        }
+        
+        Order order = orderOpt.get();
+        
+        // Log for debugging
+        System.out.println("====================================");
+        System.out.println("GET /api/orders/" + id + "/details");
+        System.out.println("Order ID: " + order.getId());
+        System.out.println("Items: " + (order.getItems() != null ? order.getItems().size() : "NULL"));
+        System.out.println("====================================");
+        
+        // Return full order with items
+        return ResponseEntity.ok(order);
     }
 
     @PostMapping
