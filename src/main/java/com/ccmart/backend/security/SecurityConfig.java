@@ -27,17 +27,11 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints
-                .requestMatchers("/", "/health").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/products/**").permitAll()
-                .requestMatchers("/api/categories/**").permitAll()
-                // Secure endpoints
-                .requestMatchers("/api/notifications/**").authenticated()
-                .anyRequest().authenticated()
+                // Temporarily allow all requests
+                .anyRequest().permitAll()
             );
 
-        // Add JWT filter before the username/password filter
+        // JWT filter is optional while testing
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
