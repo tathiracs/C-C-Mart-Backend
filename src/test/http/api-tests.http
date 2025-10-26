@@ -49,3 +49,16 @@ Authorization: Bearer YOUR_ADMIN_JWT_TOKEN
 # Debug order items (raw database query)
 GET http://localhost:8080/api/orders/8/items-debug
 Authorization: Bearer YOUR_ADMIN_JWT_TOKEN
+
+###
+# Add items to existing order (for fixing orders without items)
+POST http://localhost:8080/api/orders/8/add-items
+Authorization: Bearer YOUR_ADMIN_JWT_TOKEN
+Content-Type: application/json
+
+[
+  {
+    "productId": 1,
+    "quantity": 1
+  }
+]

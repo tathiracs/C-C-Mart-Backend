@@ -247,7 +247,15 @@ public class OrderController {
     @GetMapping("/{id}/items-debug")
     public ResponseEntity<?> debugOrderItems(@PathVariable Long id) {
         try {
-            // Query order_items table directly
+            // First check if order exists
+            Optional<Order> orderOpt = orderRepository.findById(id);
+            if (orderOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Order #" + id + " not found in database");
+            }
+            
+            Order order = orderOpt.get();
+            
+            // Query order_items table directly using raw SQL
             @SuppressWarnings("unchecked")
             List<Object[]> items = entityManager.createNativeQuery(
                 "SELECT oi.id, oi.product_id, p.name, oi.quantity, oi.price " +
@@ -257,30 +265,49 @@ public class OrderController {
                 .setParameter(1, id)
                 .getResultList();
             
-            System.out.println("====================================");
-            System.out.println("DEBUG: Order Items for Order #" + id);
-            System.out.println("Found " + items.size() + " items in database");
+            System.out.println("========================================");
+            System.out.println("🔍 DEBUG: Order Items for Order #" + id);
+            System.out.println("----------------------------------------");
+            System.out.println("Order exists: YES");
+            System.out.println("Order Number: " + order.getOrderNumber());
+            System.out.println("Order Total: " + order.getTotalAmount());
+            System.out.println("Order Status: " + order.getStatus());
+            System.out.println("----------------------------------------");
+            System.out.println("Items in DATABASE (raw SQL): " + items.size());
             
             List<Map<String, Object>> result = new java.util.ArrayList<>();
-            for (Object[] row : items) {
-                Map<String, Object> item = new java.util.HashMap<>();
-                item.put("itemId", row[0]);
-                item.put("productId", row[1]);
-                item.put("productName", row[2]);
-                item.put("quantity", row[3]);
-                item.put("price", row[4]);
-                result.add(item);
-                
-                System.out.println("  - Item #" + row[0] + ": " + row[2] + 
-                    " (Qty: " + row[3] + ", Price: " + row[4] + ")");
-            }
-            System.out.println("====================================");
             
-            return ResponseEntity.ok(Map.of(
-                "orderId", id,
-                "itemsCount", items.size(),
-                "items", result
-            ));
+            if (items.isEmpty()) {
+                System.out.println("❌ NO ITEMS FOUND IN DATABASE!");
+                System.out.println("This order was created WITHOUT items!");
+            } else {
+                for (Object[] row : items) {
+                    Map<String, Object> item = new java.util.HashMap<>();
+                    item.put("itemId", row[0]);
+                    item.put("productId", row[1]);
+                    item.put("productName", row[2]);
+                    item.put("quantity", row[3]);
+                    item.put("price", row[4]);
+                    result.add(item);
+                    
+                    System.out.println("  ✅ Item #" + row[0] + ": " + row[2] + 
+                        " (Qty: " + row[3] + ", Price: " + row[4] + ")");
+                }
+            }
+            System.out.println("========================================");
+            
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("orderId", id);
+            response.put("orderNumber", order.getOrderNumber());
+            response.put("orderTotal", order.getTotalAmount());
+            response.put("itemsCount", items.size());
+            response.put("items", result);
+            response.put("hasItems", !items.isEmpty());
+            response.put("message", items.isEmpty() ? 
+                "⚠️ Order exists but has NO items in database. Order was likely created incorrectly." : 
+                "✅ Order has " + items.size() + " item(s)");
+            
+            return ResponseEntity.ok(response);
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -315,6 +342,81 @@ public class OrderController {
                 "orderId", id,
                 "itemsCount", items.size(),
                 "items", items
+            ));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+    
+    // ADMIN: Manually add items to an existing order (for testing/fixing broken orders)
+    @PostMapping("/{id}/add-items")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> addItemsToOrder(@PathVariable Long id, @RequestBody List<Map<String, Object>> itemsData) {
+        try {
+            Optional<Order> orderOpt = orderRepository.findById(id);
+            if (orderOpt.isEmpty()) {
+                return ResponseEntity.status(404).body("Order not found");
+            }
+            
+            Order order = orderOpt.get();
+            
+            System.out.println("========================================");
+            System.out.println("🔧 ADDING ITEMS TO ORDER #" + id);
+            System.out.println("Current items count: " + (order.getItems() != null ? order.getItems().size() : 0));
+            System.out.println("Items to add: " + itemsData.size());
+            
+            BigDecimal newTotal = order.getTotalAmount() != null ? order.getTotalAmount() : BigDecimal.ZERO;
+            List<OrderItem> newItems = new java.util.ArrayList<>();
+            
+            for (Map<String, Object> itemData : itemsData) {
+                Long productId = Long.valueOf(itemData.get("productId").toString());
+                Integer quantity = Integer.valueOf(itemData.get("quantity").toString());
+                
+                Optional<Product> productOpt = productRepository.findById(productId);
+                if (productOpt.isEmpty()) {
+                    return ResponseEntity.badRequest().body("Product not found: " + productId);
+                }
+                
+                Product product = productOpt.get();
+                
+                OrderItem orderItem = new OrderItem();
+                orderItem.setOrder(order);
+                orderItem.setProduct(product);
+                orderItem.setQuantity(quantity);
+                orderItem.setPrice(product.getPrice());
+                
+                newItems.add(orderItem);
+                
+                BigDecimal itemTotal = product.getPrice().multiply(new BigDecimal(quantity));
+                newTotal = newTotal.add(itemTotal);
+                
+                System.out.println("  + Added: " + product.getName() + " x" + quantity + " = " + itemTotal);
+            }
+            
+            // Add new items to order
+            if (order.getItems() == null) {
+                order.setItems(new java.util.ArrayList<>());
+            }
+            order.getItems().addAll(newItems);
+            order.setTotalAmount(newTotal);
+            
+            // Save order (cascade will save items)
+            Order savedOrder = orderRepository.save(order);
+            
+            System.out.println("✅ Order updated!");
+            System.out.println("New total: " + savedOrder.getTotalAmount());
+            System.out.println("Total items: " + savedOrder.getItems().size());
+            System.out.println("========================================");
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Items added successfully",
+                "orderId", id,
+                "itemsAdded", newItems.size(),
+                "totalItems", savedOrder.getItems().size(),
+                "newTotal", savedOrder.getTotalAmount()
             ));
             
         } catch (Exception e) {
