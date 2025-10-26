@@ -23,3 +23,29 @@ GET http://localhost:8080/api/products
 
 ### Categories Test
 GET http://localhost:8080/api/categories
+
+### Order Tests
+
+# Get all orders (Admin only)
+GET http://localhost:8080/api/orders/all
+Authorization: Bearer YOUR_ADMIN_JWT_TOKEN
+
+###
+# Get specific order
+GET http://localhost:8080/api/orders/8
+Authorization: Bearer YOUR_ADMIN_JWT_TOKEN
+
+###
+# Get order details with guaranteed items
+GET http://localhost:8080/api/orders/8/details
+Authorization: Bearer YOUR_ADMIN_JWT_TOKEN
+
+###
+# Get order items only
+GET http://localhost:8080/api/orders/8/items
+Authorization: Bearer YOUR_ADMIN_JWT_TOKEN
+
+###
+# Debug order items (raw database query)
+GET http://localhost:8080/api/orders/8/items-debug
+Authorization: Bearer YOUR_ADMIN_JWT_TOKEN
