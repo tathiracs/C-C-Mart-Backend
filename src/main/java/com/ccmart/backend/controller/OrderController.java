@@ -94,17 +94,8 @@ public class OrderController {
                 return ResponseEntity.status(403).body("Access denied. Admin only.");
             }
             
-            // Use EntityManager with native query to bypass all JPA filtering
-            @SuppressWarnings("unchecked")
-            List<Order> allOrders = entityManager.createNativeQuery(
-                "SELECT * FROM orders ORDER BY id DESC", Order.class)
-                .getResultList();
-            
-            // Explicitly fetch order items for each order
-            for (Order order : allOrders) {
-                List<OrderItem> items = orderItemRepository.findByOrderId(order.getId());
-                order.setItems(items);
-            }
+            // Use the same method as client orders - this works!
+            List<Order> allOrders = orderRepository.findAll();
             
             // Convert to DTOs to handle deleted/inactive users gracefully
             List<OrderDTO> orderDTOs = allOrders.stream()
@@ -113,7 +104,7 @@ public class OrderController {
             
             System.out.println("====================================");
             System.out.println("GET /api/orders/all called by admin");
-            System.out.println("Using EntityManager native query");
+            System.out.println("Using orderRepository.findAll()");
             System.out.println("Total orders retrieved: " + orderDTOs.size());
             if (orderDTOs.size() > 0) {
                 System.out.println("Order IDs: ");
