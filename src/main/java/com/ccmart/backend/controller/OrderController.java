@@ -100,6 +100,12 @@ public class OrderController {
                 "SELECT * FROM orders ORDER BY id DESC", Order.class)
                 .getResultList();
             
+            // Explicitly fetch order items for each order
+            for (Order order : allOrders) {
+                List<OrderItem> items = orderItemRepository.findByOrderId(order.getId());
+                order.setItems(items);
+            }
+            
             // Convert to DTOs to handle deleted/inactive users gracefully
             List<OrderDTO> orderDTOs = allOrders.stream()
                 .map(OrderDTO::fromOrder)
@@ -114,7 +120,8 @@ public class OrderController {
                 for (OrderDTO order : orderDTOs) {
                     System.out.println("  - Order #" + order.getId() + 
                         " | User: " + order.getUser().getDisplayName() + 
-                        " | Status: " + order.getStatus());
+                        " | Status: " + order.getStatus() +
+                        " | Items: " + (order.getOrderItems() != null ? order.getOrderItems().size() : 0));
                 }
             }
             System.out.println("====================================");

@@ -7,6 +7,7 @@ import com.ccmart.backend.model.DeliveryAgent;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 
 public class OrderDTO {
     private Long id;
@@ -24,7 +25,7 @@ public class OrderDTO {
     private LocalDateTime updatedAt;
     private LocalDateTime approvedAt;
     private LocalDateTime assignedAt;
-    private List<OrderItem> items;
+    private List<OrderItem> orderItems;  // Changed from 'items' to 'orderItems' for clarity
     private DeliveryAgent deliveryAgent;
     
     // User info - enhanced to show deleted/inactive status
@@ -89,7 +90,7 @@ public class OrderDTO {
         dto.updatedAt = order.getUpdatedAt();
         dto.approvedAt = order.getApprovedAt();
         dto.assignedAt = order.getAssignedAt();
-        dto.items = order.getItems();
+        dto.orderItems = order.getItems() != null ? order.getItems() : new ArrayList<>();
         dto.deliveryAgent = order.getDeliveryAgent();
         dto.user = new UserInfo(order.getUser());
         return dto;
@@ -141,8 +142,12 @@ public class OrderDTO {
     public LocalDateTime getAssignedAt() { return assignedAt; }
     public void setAssignedAt(LocalDateTime assignedAt) { this.assignedAt = assignedAt; }
     
-    public List<OrderItem> getItems() { return items; }
-    public void setItems(List<OrderItem> items) { this.items = items; }
+    public List<OrderItem> getOrderItems() { return orderItems; }
+    public void setOrderItems(List<OrderItem> orderItems) { this.orderItems = orderItems; }
+    
+    // Backwards compatibility - some code may still use 'items' instead of 'orderItems'
+    public List<OrderItem> getItems() { return orderItems; }
+    public void setItems(List<OrderItem> items) { this.orderItems = items; }
     
     public DeliveryAgent getDeliveryAgent() { return deliveryAgent; }
     public void setDeliveryAgent(DeliveryAgent deliveryAgent) { this.deliveryAgent = deliveryAgent; }
