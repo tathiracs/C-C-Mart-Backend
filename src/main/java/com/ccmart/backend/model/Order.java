@@ -24,6 +24,8 @@ public class Order {
 
     private BigDecimal totalAmount;
 
+    private BigDecimal deliveryFee = BigDecimal.ZERO;
+
     private String status = "pending"; // pending, approved, assigned, in_delivery, delivered, cancelled
 
     private String paymentStatus = "pending";
@@ -72,6 +74,9 @@ public class Order {
 
     public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+
+    public BigDecimal getDeliveryFee() { return deliveryFee; }
+    public void setDeliveryFee(BigDecimal deliveryFee) { this.deliveryFee = deliveryFee; }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

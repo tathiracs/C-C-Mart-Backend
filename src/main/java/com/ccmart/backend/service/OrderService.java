@@ -69,8 +69,20 @@ public class OrderService {
                 productRepository.save(p);
             }
             
-            // Set order total
-            order.setTotalAmount(total);
+            // Get delivery fee from order (sent from frontend) or default to 0
+            BigDecimal deliveryFee = order.getDeliveryFee() != null ? order.getDeliveryFee() : BigDecimal.ZERO;
+            
+            // Calculate final total (items total + delivery fee)
+            BigDecimal finalTotal = total.add(deliveryFee);
+            
+            // Log the calculation for debugging
+            System.out.println("📦 Order Calculation:");
+            System.out.println("   Items Subtotal: Rs. " + total);
+            System.out.println("   Delivery Fee: Rs. " + deliveryFee);
+            System.out.println("   Final Total: Rs. " + finalTotal);
+            
+            // Set order total amount (includes delivery fee)
+            order.setTotalAmount(finalTotal);
             
             // Save order
             Order savedOrder = orderRepository.save(order);
