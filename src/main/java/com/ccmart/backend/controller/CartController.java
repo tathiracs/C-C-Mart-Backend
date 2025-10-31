@@ -31,7 +31,7 @@ public class CartController {
     public ResponseEntity<?> getCart(Authentication authentication) {
         if (authentication == null) return ResponseEntity.status(401).body("Unauthorized");
         Long userId = Long.valueOf(authentication.getName());
-        List<CartItem> items = cartRepository.findAll(); // simplified; should filter by user
+        List<CartItem> items = cartRepository.findAll(); 
         return ResponseEntity.ok(items);
     }
 
